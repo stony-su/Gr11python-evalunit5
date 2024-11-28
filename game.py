@@ -29,3 +29,18 @@ def room():
     screen.blit(player, player_rect)
     display.flip
 
+previous_x = player_x
+previous_y = player_y
+
+if PRESS_RIGHT == True:
+    player_y = player_y + moverate
+
+player_rect = Rect(player_x, player_y, player)
+for rect in walls:
+    if player_rect.colliderect(rect):
+        player_x = previous_x
+        player_y = previous_y
+        break
+clock.tick(60)
+
+quit()
