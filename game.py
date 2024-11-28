@@ -1,16 +1,39 @@
-from pygame import *
+"""
+Name: Darren Su
+Period: 2
+Class Code: ICU3I
+Assignment: Treasure hunting house game
+something I forgot about
+"""
+
+#pygame init
+import pygame as py
+
+py.display.init()
+running = True
+
+# Player Varibles
+player_x = 300 
+player_y = 600
+player = py.image.load('C:\\Users\\Darre\\Downloads\\Counter\\Gr11python-evalunit5\\assets\\Characters\\walking_frames\\tile000.png')
+player_width = player.get_width()
+player_height = player.get_height()
+player = player.transform.scale (player, player_height, player_width)
+move_rate = 5
+
+#Colors
 BLACK = (0,0,0)
 WHITE = (255,255,255)
 RED = (255,255,255)
-running = True
-player_x = 300 
-player_y = 600
 
-screen = (1500, 1500)
+#Time Track
+clock = py.time.Clock
+
+#screen 
+screen = py.display.set_mode((1000, 1000))
 screen.fill(WHITE)
-player = image.load(f'assets\Characters\walking_frames\tile000.png')
-player_width = player.get_width() //12
-player_height = player.get_height()//12
+
+
 
 def room():
     screen.fill(WHITE)
@@ -18,29 +41,45 @@ def room():
     global walls
     global player_rect
 
+    player_rect = py.Rect(player_x, player_y, player_width, player_height)
+
     walls = [
-        Rect(x,y, 100, 100)
+        py.Rect(700, 800, 100, 100)
     ]
 
     for x in walls:
-        draw.rect(screen,BLACK, rect)
+        py.draw.rect(screen, BLACK, x)
 
-    player_rect = Rect(player_x, player_y, player_width, player_height)
     screen.blit(player, player_rect)
-    display.flip
 
-previous_x = player_x
-previous_y = player_y
+    py.display.flip
 
-if PRESS_RIGHT == True:
-    player_y = player_y + moverate
+while running == True:
+    previous_x = player_x
+    previous_y = player_y
 
-player_rect = Rect(player_x, player_y, player)
-for rect in walls:
-    if player_rect.colliderect(rect):
-        player_x = previous_x
-        player_y = previous_y
-        break
-clock.tick(60)
+    events = py.event.get()
+    for event in events:
+        if event.type == py.KEYDOWN:
+            if event.key == py.K_LEFT:
+                player_x = player_x - move_rate
+            if event.key == py.K_RIGHT:
+                player_x = player_x + move_rate
 
-quit()
+            if event.key == py.K_UP:
+                player_y = player_y - move_rate
+            if event.key == py.K_DOWN:
+                player_y = player_y + move_rate
+
+    room()
+
+    for rect in walls:
+        if player_rect.colliderect(rect):
+            player_x = previous_x
+            player_y = previous_y
+            break
+    
+    py.display.flip
+
+    #clock.tick(60)
+
