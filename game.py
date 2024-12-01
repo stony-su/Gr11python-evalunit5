@@ -10,21 +10,22 @@ something I forgot about
 import pygame as py
 import os
 
+#init
 py.init()
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%d, %d" %(20, 20)
 running = True
 
 # Player Varibles
-player_x = 300 
-player_y = 600
+player_x = 200*0.45
+player_y = 1100*0.45
 player = py.image.load('assets/Characters/walking_frames/tile000.png')
 #you had to do this to make the transparent background - ask teacher if ok
 
 #setup player
-player_width = player.get_width() *3
-player_height = player.get_height() *3
+player_width = player.get_width() *2
+player_height = player.get_height() *2
 player =  py.transform.scale (player, (player_height, player_width))
-move_rate = 20
+move_rate = 10
 mask = py.mask.from_surface(player)
 
 #Colors
@@ -32,6 +33,11 @@ BLACK = (0,0,0)
 WHITE = (255,255,255)
 RED = (255,0,0)
 
+# movement key booleans
+PRESS_RIGHT = False
+PRESS_LEFT = False
+PRESS_UP = False
+PRESS_DOWN = False
 
 #Time Track
 clock = py.time.Clock()
@@ -40,23 +46,86 @@ clock = py.time.Clock()
 screen = py.display.set_mode((1000, 700))
 screen.fill(WHITE)
 
-def factor_rect(rect, factor):
-    return py.Rect(rect.x * factor, rect.y * factor, rect.width * factor, rect.height * factor)
+def factor_rect(rect):
+    factor = 0.50
+    x_move = 100
+    y_move = 25
+    #this scales the walls, as well as centers it
+    return py.Rect(rect.x * factor + x_move, rect.y * factor - y_move, rect.width * factor, rect.height * factor)
 
 def room():
     screen.fill(WHITE)
 
     global walls
+    global doors
     global player_rect
 
     player_rect = py.Rect(player_x, player_y, player_width, player_height)
 
     walls = [
-        py.Rect(100, 500, 100, 100)
+        #top wall
+        py.Rect(100, 100, 900, 100),  
+
+        #left-most wall
+        py.Rect(100, 200, 100, 800), 
+
+        #bottom-left door
+        py.Rect(200, 900, 100, 100), 
+        py.Rect(400, 900, 200, 100), 
+
+        #hallway - bathroom wall
+        py.Rect(500, 200, 100, 400), 
+
+        #bedroom - dining room wall
+        py.Rect(900, 200, 100, 800), 
+
+        #living room - kitchen wall
+        py.Rect(500, 900, 100, 500),  
+
+        #bottom-most wall
+        py.Rect(500, 1300, 500, 100),  
+
+        #living room - kitchen wall, right side bottom
+        py.Rect(900, 1100, 100, 200), 
+
+        #kitchen wall bottom
+        py.Rect(900, 1100, 600, 100), 
+
+        #bedroom-living room wal
+        py.Rect(500, 700, 600, 100),
+        
+        #bedroom-dinning top wall
+        py.Rect(700, 300, 800, 100),
+
+        #right-most wall
+        py.Rect(1400, 300, 100, 900),
+
+        #kitchen-dining room door
+        py.Rect(1300, 700, 200, 100),
     ]
 
+    doors = [
+        #hallway
+        py.Rect(300, 900, 100, 100),
+
+        #hallway - livingroom door
+        py.Rect(500, 800, 100, 100),
+        
+        #hallway - bedroom door
+        py.Rect(500, 500, 100, 100),
+
+        #bedroom - bathroom door
+        py.Rect(600, 300, 100, 100),
+
+        #living room - kitchen door
+        py.Rect(900, 1000, 100, 100),
+
+        #kitchen - dining room door
+        py.Rect(1100, 700, 200, 100),
+
+    ]
     for x in walls:
-        rect = factor_rect(x, 0.54)
+        rect = factor_rect(x)
         py.draw.rect(screen, BLACK, rect)
 
     screen.blit(player, player_rect)
@@ -66,30 +135,50 @@ def room():
 while running == True:
     previous_x = player_x
     previous_y = player_y
+    for e in py.event.get():
+        if e.type == py.QUIT:
+            running = False
 
-    events = py.event.get()
-    for event in events:
-        if event.type == py.KEYDOWN:
-            if event.key == py.K_LEFT:
-                player_x = player_x - move_rate
-            if event.key == py.K_RIGHT:
-                player_x = player_x + move_rate
+        elif e.type == py.KEYDOWN:
+            if e.key == py.K_RIGHT: 
+                PRESS_RIGHT = True
+            if e.key == py.K_LEFT: 
+                PRESS_LEFT = True
+            if e.key == py.K_UP: 
+                PRESS_UP = True
+            if e.key == py.K_DOWN: 
+                PRESS_DOWN = True
 
-            if event.key == py.K_UP:
-                player_y = player_y - move_rate
-            if event.key == py.K_DOWN:
-                player_y = player_y + move_rate
+        elif e.type == py.KEYUP:
+            if e.key == py.K_RIGHT: 
+                PRESS_RIGHT = False
+            if e.key == py.K_LEFT: 
+                PRESS_LEFT = False
+            if e.key == py.K_UP: 
+                PRESS_UP = False
+            if e.key == py.K_DOWN: 
+                PRESS_DOWN = False
+
+        if PRESS_RIGHT == True: 
+            player_x = player_x + move_rate
+        if PRESS_LEFT == True: 
+            player_x = player_x - move_rate
+        if PRESS_UP == True: 
+            player_y = player_y - move_rate
+        if PRESS_DOWN == True: 
+            player_y = player_y + move_rate
 
     room()
 
     for x in walls:
-        rect = factor_rect(x, 0.54)
+        rect = factor_rect(x)
         if player_rect.colliderect(rect):
             player_x = previous_x
             player_y = previous_y
             break
     
     py.display.flip()
+    print(player_x, player_y)
 
     clock.tick(60)
 
