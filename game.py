@@ -8,32 +8,40 @@ something I forgot about
 
 #pygame init
 import pygame as py
+import os
 
-py.display.init()
+py.init()
+os.environ['SDL_VIDEO_WINDOW_POS'] = "%d, %d" %(20, 20)
 running = True
 
 # Player Varibles
 player_x = 300 
 player_y = 600
-player = py.image.load('C:\\Users\\Darre\\Downloads\\Counter\\Gr11python-evalunit5\\assets\\Characters\\walking_frames\\tile000.png')
-player_width = player.get_width()
-player_height = player.get_height()
-player = player.transform.scale (player, player_height, player_width)
-move_rate = 5
+player = py.image.load('assets/Characters/walking_frames/tile000.png')
+#you had to do this to make the transparent background - ask teacher if ok
+
+#setup player
+player_width = player.get_width() *3
+player_height = player.get_height() *3
+player =  py.transform.scale (player, (player_height, player_width))
+move_rate = 20
+mask = py.mask.from_surface(player)
 
 #Colors
 BLACK = (0,0,0)
 WHITE = (255,255,255)
-RED = (255,255,255)
+RED = (255,0,0)
+
 
 #Time Track
-clock = py.time.Clock
+clock = py.time.Clock()
 
 #screen 
-screen = py.display.set_mode((1000, 1000))
+screen = py.display.set_mode((1000, 700))
 screen.fill(WHITE)
 
-
+def factor_rect(rect, factor):
+    return py.Rect(rect.x * factor, rect.y * factor, rect.width * factor, rect.height * factor)
 
 def room():
     screen.fill(WHITE)
@@ -44,15 +52,16 @@ def room():
     player_rect = py.Rect(player_x, player_y, player_width, player_height)
 
     walls = [
-        py.Rect(700, 800, 100, 100)
+        py.Rect(100, 500, 100, 100)
     ]
 
     for x in walls:
-        py.draw.rect(screen, BLACK, x)
+        rect = factor_rect(x, 0.54)
+        py.draw.rect(screen, BLACK, rect)
 
     screen.blit(player, player_rect)
 
-    py.display.flip
+    py.display.flip()
 
 while running == True:
     previous_x = player_x
@@ -73,13 +82,15 @@ while running == True:
 
     room()
 
-    for rect in walls:
+    for x in walls:
+        rect = factor_rect(x, 0.54)
         if player_rect.colliderect(rect):
             player_x = previous_x
             player_y = previous_y
             break
     
-    py.display.flip
+    py.display.flip()
 
-    #clock.tick(60)
+    clock.tick(60)
+
 
