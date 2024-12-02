@@ -61,7 +61,7 @@ def clues_place (y):
     global clue_location_vertical
 
     rooms = ["Hallway", "Living Room", "Bedroom", "Bathroom", "Kitchen", "Dining Room"]
-    room_numbers = ["first", "second", "third", "fourth", "fifth", "sixth"]
+    room_numbers = ["first", "second", "third", "fourth", "fifth"  ]
 
     next_room = rooms[y+1]
     room_number = room_numbers[y]
@@ -259,16 +259,16 @@ while running == True:
         
         if room_remenber_once[y] == True and player_rect.colliderect(door):
 
-            clue = clues_place(y)
+            clue = clues_place(y) 
 
             #loop changes
             room_remenber_once[y] = False
+            y = y + 1
             
             textbox(clue)
-        
+
             break 
 
-        y = y + 1
     
     py.display.flip()
     print(player_x, player_y)
