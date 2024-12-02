@@ -43,6 +43,10 @@ PRESS_UP = False
 PRESS_DOWN = False
 START = True
 
+#room booleans (for loops)
+global room_remenber_once
+room_remenber_once = [True, True, True, True, True, True]
+
 #Time Track
 clock = py.time.Clock()
 
@@ -52,17 +56,20 @@ screen.fill(WHITE)
 
 #game clues
 
-def clues (x):
-    global clues
-    global rooms
+def clues_place (y):
+    global clue_location_horziontal
+    global clue_location_vertical
 
     rooms = ["Hallway", "Living Room", "Bedroom", "Bathroom", "Kitchen", "Dining Room"]
     room_numbers = ["first", "second", "third", "fourth", "fifth", "sixth"]
 
-    next_room = rooms[x]
-    room_number = room_numbers[x]
+    next_room = rooms[y+1]
+    room_number = room_numbers[y]
+
+    clue_location_horziontal = random.choice(["left", "right"])
+    clue_location_vertical = random.choice(["top", "bottom"])
     
-    output_clue = "The %s key to the %s is in the top left corner of the hallway" %(room_number, next_room)
+    output_clue = "The %s key to the %s is in the %s %s corner of the %s" %(room_number, next_room, clue_location_vertical, clue_location_horziontal, rooms[y])
 
     return output_clue
 
@@ -247,10 +254,21 @@ while running == True:
             break
 
     for x in doors:
-        rect = factor_rect(x)
-        if player_rect.colliderect(rect):
-            textbox(case[x])
+        y = 0
+        door = factor_rect(x)
+        
+        if room_remenber_once[y] == True and player_rect.colliderect(door):
+
+            clue = clues_place(y)
+
+            #loop changes
+            room_remenber_once[y] = False
+            
+            textbox(clue)
+        
             break 
+
+        y = y + 1
     
     py.display.flip()
     print(player_x, player_y)
