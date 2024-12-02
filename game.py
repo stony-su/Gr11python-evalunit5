@@ -46,6 +46,7 @@ START = True
 #room booleans (for loops)
 global room_remenber_once
 room_remenber_once = [True, True, True, True, True, True]
+y = 0
 
 #Time Track
 clock = py.time.Clock()
@@ -254,7 +255,6 @@ while running == True:
             break
 
     for x in doors:
-        y = 0
         door = factor_rect(x)
         
         if room_remenber_once[y] == True and player_rect.colliderect(door):
