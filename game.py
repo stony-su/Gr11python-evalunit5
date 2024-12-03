@@ -60,9 +60,11 @@ entered_doors = []
 global clue_found
 global clue_rect
 global clue_number 
+global clue_menu
 clue_found = False 
 clue_number = 0
 clue_rect = None
+clue_menu = []
 
 #Time Track
 clock = py.time.Clock()
@@ -111,11 +113,24 @@ for x in range(1,6):
 
 def timer (clue):
     textbox_rect = py.Rect(5, 0, 400, 700)
-    time = py.time.get_ticks()
     screen.blit(gui_image, textbox_rect)
+
+    time = py.time.get_ticks()
     font = py.font.Font(None, 36)
     text = "Time:  " + str(time/1000)
     text_surface = font.render(text, True, GREY)
+
+    if clue not in clue_menu:
+        clue_menu.append(clue)
+    
+    y_menu_move = 0
+    n = 0
+    if n in clue_menu:
+        for n in clue_menu:
+            clue_rect = py.Rect(5, 100 + y_menu_move, 400, 700)
+            screen.blit(clue_menu[n], clue_rect)
+            y_menu_move = y_menu_move + 50
+
     screen.blit(text_surface, (50, 100))
 
 def factor_rect(rect):
