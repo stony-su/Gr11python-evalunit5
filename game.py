@@ -64,6 +64,8 @@ global clue_menu
 clue_found = False 
 clue_number = 0
 clue_rect = None
+clue_location_horziontal = "right"
+clue_location_vertical = "top"
 clue_menu = []
 
 #Time Track
@@ -80,8 +82,8 @@ south_walk = [path+"south_n1.png", path + "south_walk1.png", path + "south_walk2
 
 #clue generation function
 def clues_place (y):
-    global clue_location_horziontal
-    global clue_location_vertical
+    #global clue_location_horziontal
+    #global clue_location_vertical
     global clue_number
 
     rooms = ["Hallway", "Living Room", "Bedroom", "Bathroom", "Kitchen", "Dining Room", "Treasure"]
@@ -105,7 +107,7 @@ def clues_place (y):
     clue_number = clue_number + 1
     
 
-    return output_clue
+    return output_clue, clue_location_horziontal, clue_location_vertical
 
 clues_list = []
 for x in range(1,6):
@@ -149,6 +151,7 @@ def room():
 
     global walls
     global doors
+    global clues
     global player_rect
 
     player_rect = py.Rect(player_x, player_y, player_width, player_height)
@@ -394,7 +397,7 @@ while running == True:
         doors_list.append(factor_rect(x))
         
         if room_remenber_once[y] == True and player_rect.colliderect(doors_list[y]):
-            clue = clues_place(y) 
+            clue, clue_location_horziontal, clue_location_vertical = clues_place(y) 
 
             #loop changes
             room_remenber_once[y] = False   
@@ -430,10 +433,19 @@ while running == True:
                 break
     
     if not clue_found:
-        clue_x = 500
-        clue_y = 500
-        clue_rect = py.Rect(clue_x, clue_y, 30, 30)  
 
+        if clue_location_horziontal == "left" and clue_location_vertical == "top":
+            clue_rect = factor_rect(clues[clue_number-1])
+        
+        if clue_location_horziontal == "right" and clue_location_vertical == "top":
+            clue_rect = factor_rect(clues[clue_number])
+        
+        if clue_location_horziontal == "left" and clue_location_vertical == "bottom":
+            clue_rect = factor_rect(clues[clue_number+1])
+        
+        if clue_location_horziontal == "right" and clue_location_vertical == "bottom":
+            clue_rect = factor_rect(clues[clue_number+2])
+    
         if player_rect.colliderect(clue_rect):
             clue_found = True
             textbox("You found a clue!")
