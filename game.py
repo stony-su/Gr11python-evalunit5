@@ -55,6 +55,14 @@ room_remenber_once = [True, True, True, True, True, True]
 y = 0
 entered_doors = []
 
+#clue variables
+global clue_found
+global clue_rect
+global clue_number 
+clue_found = False 
+clue_number = 0
+clue_rect = None
+
 #Time Track
 clock = py.time.Clock()
 
@@ -71,13 +79,7 @@ south_walk = [path+"south_n1.png", path + "south_walk1.png", path + "south_walk2
 def clues_place (y):
     global clue_location_horziontal
     global clue_location_vertical
-    global clue_found
-    global clue_rect
-    global clue_number 
-
-    clue_number = 0
-    clue_found = False  
-    clue_rect = None
+    global clue_number
 
     rooms = ["Hallway", "Living Room", "Bedroom", "Bathroom", "Kitchen", "Dining Room", "Treasure"]
     room_numbers = ["first", "second", "third", "fourth", "fifth"  ]
@@ -93,8 +95,12 @@ def clues_place (y):
     clue_location_vertical = random.choice(["top", "bottom"])
     
     output_clue = "The %s key to the %s is in the %s %s corner of the %s" %(room_number, next_room, clue_location_vertical, clue_location_horziontal, rooms[y])
-    
+
+    #clue variables
+    clue_found = False  
+    clue_rect = None
     clue_number = clue_number + 1
+    
 
     return output_clue
 
@@ -402,15 +408,19 @@ while running == True:
                 player_y = previous_y
                 break
     
-    if clue_found == False:
+    if not clue_found:
         clue_x = 500
         clue_y = 500
-        clue_rect = py.Rect(clue_x, clue_y, 30, 30)  # Example clue size (30x30)
+        clue_rect = py.Rect(clue_x, clue_y, 30, 30)  
 
-    # Check if the player finds the clue
-    if player_rect.colliderect(clue_rect):
-        clue_found = True
-        textbox(clues_place(y))
+        if player_rect.colliderect(clue_rect):
+            clue_found = True
+            textbox("You found a clue!")
+            textbox("Now you can go to the next room!")
+            PRESS_RIGHT = False
+            PRESS_LEFT = False
+            PRESS_UP = False
+            PRESS_DOWN = False
 
     py.display.flip()
     clock.tick(60)
