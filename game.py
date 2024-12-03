@@ -38,7 +38,7 @@ RED = (255,0,0)
 GREEN = (0,128,0)
 GREY = (200,200,200)
 
-# movement key booleans
+#movement booleans
 global PRESS_RIGHT
 global PRESS_DOWN
 global PRESS_LEFT
@@ -53,6 +53,7 @@ START = True
 global room_remenber_once
 room_remenber_once = [True, True, True, True, True, True]
 y = 0
+entered_doors = []
 
 #Time Track
 clock = py.time.Clock()
@@ -70,6 +71,13 @@ south_walk = [path+"south_n1.png", path + "south_walk1.png", path + "south_walk2
 def clues_place (y):
     global clue_location_horziontal
     global clue_location_vertical
+    global clue_found
+    global clue_rect
+    global clue_number 
+
+    clue_number = 0
+    clue_found = False  
+    clue_rect = None
 
     rooms = ["Hallway", "Living Room", "Bedroom", "Bathroom", "Kitchen", "Dining Room", "Treasure"]
     room_numbers = ["first", "second", "third", "fourth", "fifth"  ]
@@ -85,6 +93,8 @@ def clues_place (y):
     clue_location_vertical = random.choice(["top", "bottom"])
     
     output_clue = "The %s key to the %s is in the %s %s corner of the %s" %(room_number, next_room, clue_location_vertical, clue_location_horziontal, rooms[y])
+    
+    clue_number = clue_number + 1
 
     return output_clue
 
@@ -172,6 +182,45 @@ def room():
 
         #kitchen - dining room door
         py.Rect(1100, 700, 200, 100)
+
+    ]
+
+    clues = [
+        #order is topleft, top right, bottom left, bottom right
+        #hallway
+        py.Rect(200, 200, 100, 100),
+        py.Rect(400, 200, 100, 100),
+        py.Rect(200, 800, 100, 100),
+        py.Rect(400, 800, 100, 100),
+
+        #living room
+        py.Rect(600, 800, 100, 100),
+        py.Rect(800, 800, 100, 100),
+        py.Rect(600, 1200, 100, 100),
+        py.Rect(800, 1200, 100, 100),
+
+        #bedroom
+        py.Rect(600, 400, 100, 100),
+        py.Rect(800, 400, 100, 100),
+        py.Rect(600, 600, 100, 100),
+        py.Rect(800, 600, 100, 100),
+
+        #bathroom
+        py.Rect(600, 200, 100, 100),
+        py.Rect(800, 200, 100, 100),
+        py.Rect(600, 200, 100, 100),
+        py.Rect(800, 200, 100, 100),
+
+        #kitchen
+        py.Rect(1000, 800, 100, 100),
+        py.Rect(1300, 800, 100, 100),
+        py.Rect(1000, 1000, 100, 100),
+        py.Rect(1300, 1000, 100, 100),
+
+
+
+
+
 
     ]
 
@@ -312,31 +361,57 @@ while running == True:
             player_x = previous_x
             player_y = previous_y
             break
-    
+
     for x in doors:
+        door_single = factor_rect(x)
         doors_list.append(factor_rect(x))
         
-        if room_remenber_once[y] == True and player_rect.colliderect(doors_list  [y]):
-                
+        if room_remenber_once[y] == True and player_rect.colliderect(doors_list[y]):
             clue = clues_place(y) 
 
             #loop changes
-            room_remenber_once[y] = False
+            room_remenber_once[y] = False   
+            entered_doors.append(doors[y])
             y = y + 1
-            if y == 1 or 4 or 6:
-                for z in range (1,101):
-                    player_y = player_y - 1
+
+            if y in [1,4,6]:
+                for z in range (1,21):
+                    player_y = player_y - 5
+                    player_rect.y = player_y
+                    room()
+                    py.display.flip()
+                    py.time.delay(20)
+            elif y in [2,3,5]:
+                for z in range (1,21):
+                    player_x = player_x + 5
+                    player_rect.x = player_x
+                    room()
                     py.display.flip()
                     py.time.delay(20)
 
             textbox(clue)
+
             PRESS_RIGHT = False
             PRESS_LEFT = False
             PRESS_UP = False
             PRESS_DOWN = False
 
-            
+
+        elif player_rect.colliderect(door_single) and x not in entered_doors:
+                player_x = previous_x
+                player_y = previous_y
+                break
     
+    if clue_found == False:
+        clue_x = 500
+        clue_y = 500
+        clue_rect = py.Rect(clue_x, clue_y, 30, 30)  # Example clue size (30x30)
+
+    # Check if the player finds the clue
+    if player_rect.colliderect(clue_rect):
+        clue_found = True
+        textbox(clues_place(y))
+
     py.display.flip()
     clock.tick(60)
 
