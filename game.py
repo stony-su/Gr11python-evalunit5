@@ -20,6 +20,7 @@ running = True
 #Images
 player = py.image.load('assets/Characters/walking_frames/south_n1.png')
 textbox_image = py.image.load('assets/textbox/textbox.png')
+gui_image = py.image.load('assets/textbox/clues_box.png')
 
 # Player Varibles
 player_x = 200*0.45
@@ -108,11 +109,20 @@ clues_list = []
 for x in range(1,6):
     clues_list.append(clues_place)
 
+def timer (clue):
+    textbox_rect = py.Rect(5, 0, 400, 700)
+    time = py.time.get_ticks()
+    screen.blit(gui_image, textbox_rect)
+    font = py.font.Font(None, 36)
+    text = "Time:  " + str(time/1000)
+    text_surface = font.render(text, True, GREY)
+    screen.blit(text_surface, (50, 100))
+
 def factor_rect(rect):
     factor = 0.50
     width_factor = 0.5
     height_factor = 0.5
-    x_move = 100
+    x_move = 225
     y_move = 25
 
     #this scales the walls, as well as centers it
@@ -223,11 +233,6 @@ def room():
         py.Rect(1000, 1000, 100, 100),
         py.Rect(1300, 1000, 100, 100),
 
-
-
-
-
-
     ]
 
     for x in walls:
@@ -246,6 +251,7 @@ def room():
         z = z + 1
 
     screen.blit(player, player_rect)
+    timer(None)
 
     py.display.flip()
 
@@ -421,8 +427,6 @@ while running == True:
             PRESS_LEFT = False
             PRESS_UP = False
             PRESS_DOWN = False
-
     py.display.flip()
     clock.tick(60)
-
 
