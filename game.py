@@ -14,10 +14,11 @@ import random
 #init
 py.init()
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%d, %d" %(20, 20)
+global running
 running = True
 
 #Images
-player = py.image.load('assets/Characters/walking_frames/tile000.png')
+player = py.image.load('assets/Characters/walking_frames/south_n1.png')
 textbox_image = py.image.load('assets/textbox/textbox.png')
 
 # Player Varibles
@@ -34,9 +35,14 @@ move_rate = 10
 BLACK = (0,0,0)
 WHITE = (255,255,255)
 RED = (255,0,0)
+GREEN = (0,128,0)
 GREY = (200,200,200)
 
 # movement key booleans
+global PRESS_RIGHT
+global PRESS_DOWN
+global PRESS_LEFT
+global PRESS_UP
 PRESS_RIGHT = False
 PRESS_LEFT = False
 PRESS_UP = False
@@ -55,16 +61,24 @@ clock = py.time.Clock()
 screen = py.display.set_mode((1000, 700))
 screen.fill(WHITE)
 
-#game clues
+#Walking Animation
+path = "assets/Characters/walking_frames/"
 
+south_walk = [path+"south_n1.png", path + "south_walk1.png", path + "south_walk2.png", path + "south_n2.png"]
+
+#clue generation function
 def clues_place (y):
     global clue_location_horziontal
     global clue_location_vertical
 
-    rooms = ["Hallway", "Living Room", "Bedroom", "Bathroom", "Kitchen", "Dining Room"]
+    rooms = ["Hallway", "Living Room", "Bedroom", "Bathroom", "Kitchen", "Dining Room", "Treasure"]
     room_numbers = ["first", "second", "third", "fourth", "fifth"  ]
 
     next_room = rooms[y+1]
+    if next_room == "Treasure":
+        win_condition = "You have found the treasure!"
+        running = False
+        return win_condition
     room_number = room_numbers[y]
 
     clue_location_horziontal = random.choice(["left", "right"])
@@ -74,6 +88,9 @@ def clues_place (y):
 
     return output_clue
 
+clues_list = []
+for x in range(1,6):
+    clues_list.append(clues_place)
 
 def factor_rect(rect):
     factor = 0.50
@@ -145,7 +162,7 @@ def room():
         py.Rect(500, 800, 100, 100),
         
         #hallway - bedroom door
-        py.Rect(500, 500, 100, 100),
+        py.Rect(500, 600, 100, 100),
 
         #bedroom - bathroom door
         py.Rect(600, 300, 100, 100),
@@ -154,13 +171,24 @@ def room():
         py.Rect(900, 1000, 100, 100),
 
         #kitchen - dining room door
-        py.Rect(1100, 700, 200, 100),
+        py.Rect(1100, 700, 200, 100)
 
     ]
 
     for x in walls:
         rect = factor_rect(x)
         py.draw.rect(screen, BLACK, rect)
+    z = 0
+    for rect_num in doors:
+        
+        door = factor_rect(rect_num)
+
+        if room_remenber_once[z] == True:
+            py.draw.rect(screen,RED,door)
+        elif room_remenber_once[z] == False:
+            py.draw.rect(screen,GREEN,door)
+
+        z = z + 1
 
     screen.blit(player, player_rect)
 
@@ -176,7 +204,13 @@ def textbox (text):
     font = py.font.Font(None, 36)
     x = 0
     x_spacing = 0
+
     while x < len(text):
+        if x > 50:
+            new_line = text[x:]
+            textbox(new_line)
+            break
+
         text_surface = font.render(text[x], True, GREY)
         screen.blit(text_surface, (200+ x_spacing, 500))
 
@@ -186,6 +220,24 @@ def textbox (text):
         x_spacing = x_spacing + text_surface.get_width()
         x = x + 1
 
+        """
+        if len(text) > 50:
+            for e in py.event.get():
+                if e.type == py.KEYDOWN:
+                    half_length_text = len(text)//2
+                    existing_text = text [0:half_length_text]
+                    
+                    screen.blit(textbox_image, textbox_rect)
+                    text_surface = font.render(existing_text, True, GREY)
+                    screen.blit(text_surface, (200, 500))
+                    py.display.flip()
+                    new_line = text[half_length_text:]
+                    textbox(new_line)
+
+                    break
+        else:
+        """
+        #remove if bug not resolved
         for e in py.event.get():
             if e.type == py.KEYDOWN:
                 screen.blit(textbox_image, textbox_rect)
@@ -199,8 +251,9 @@ def textbox (text):
             if e.type == py.KEYDOWN:
                 return
 
-
+doors_list = []
 while running == True:
+    
 
     if START == True:
         textbox("hint: spacebar to move through textboxes")
@@ -238,11 +291,17 @@ while running == True:
 
     if PRESS_RIGHT == True: 
         player_x = player_x + move_rate
+
     if PRESS_LEFT == True: 
         player_x = player_x - move_rate
+
     if PRESS_UP == True: 
         player_y = player_y - move_rate
+        
     if PRESS_DOWN == True: 
+        #counter = 0
+        #player = py.image.load(south_walk[counter])
+        #counter = counter + 1
         player_y = player_y + move_rate
 
     player_rect = py.Rect(player_x, player_y, player_width, player_height)
@@ -253,27 +312,32 @@ while running == True:
             player_x = previous_x
             player_y = previous_y
             break
-
+    
     for x in doors:
-        door = factor_rect(x)
+        doors_list.append(factor_rect(x))
         
-        if room_remenber_once[y] == True and player_rect.colliderect(door):
-
+        if room_remenber_once[y] == True and player_rect.colliderect(doors_list  [y]):
+                
             clue = clues_place(y) 
 
             #loop changes
             room_remenber_once[y] = False
             y = y + 1
-            
+            if y == 1 or 4 or 6:
+                for z in range (1,101):
+                    player_y = player_y - 1
+                    py.display.flip()
+                    py.time.delay(20)
+
             textbox(clue)
+            PRESS_RIGHT = False
+            PRESS_LEFT = False
+            PRESS_UP = False
+            PRESS_DOWN = False
 
-            break 
-
+            
     
     py.display.flip()
-    print(player_x, player_y)
-
-
     clock.tick(60)
 
 
