@@ -35,6 +35,7 @@ move_rate = 10
 #Colors
 BLACK = (0,0,0)
 WHITE = (255,255,255)
+YELLOW = (255,255,0)
 RED = (255,0,0)
 GREEN = (0,128,0)
 GREY = (200,200,200)
@@ -111,7 +112,7 @@ def clues_place (y):
     #clue variables
     clue_found = False  
     clue_rect = None
-    clue_number = clue_number + 1
+    clue_number = clue_number + 4
     
 
     return output_clue, clue_location_horziontal, clue_location_vertical
@@ -123,7 +124,7 @@ def timer (clue):
     time = py.time.get_ticks()
     font = py.font.Font(None, 36)
     font_small = py.font.Font(None, 18)
-    text = "Time:  " + str(time/1000)
+    text = "Time:  " + str(time/1000) + "s"
     text_surface = font.render(text, True, GREY)
 
     if clue not in clue_menu and clue != None:
@@ -280,6 +281,10 @@ def room():
 
         z = z + 1
 
+    for rect in clues:
+        rect_clue = factor_rect(rect)
+        py.draw.rect(screen, YELLOW, rect_clue)
+
     screen.blit(player, player_rect)
     timer(current_clue)
 
@@ -429,9 +434,14 @@ while running == True:
                 current_clue, clue_location_horziontal, clue_location_vertical = clues_place(y) 
                 number_of_clues_found = number_of_clues_found + 1
                 textbox(current_clue)
+            else:
+                current_clue, clue_location_horziontal, clue_location_vertical = clues_place(y) 
+                number_of_clues_found = number_of_clues_found + 1
+                textbox(current_clue)
 
             #loop changes  
-            clue_found == False
+            clue_found = False
+            print("falsed")
             entered_doors.append(doors[y])
             y = y + 1
 
@@ -449,17 +459,17 @@ while running == True:
     if clue_found == False:
 
         if clue_location_horziontal == "left" and clue_location_vertical == "top":
-            clue_rect = factor_rect(clues[clue_number*number_of_clues_found])
+            clue_rect = factor_rect(clues[clue_number-4])
         
         elif clue_location_horziontal == "right" and clue_location_vertical == "top":
-            clue_rect = factor_rect(clues[clue_number*number_of_clues_found+1])
+            clue_rect = factor_rect(clues[clue_number-3])
         
         elif clue_location_horziontal == "left" and clue_location_vertical == "bottom":
-            clue_rect = factor_rect(clues[clue_number*number_of_clues_found+2])
+            clue_rect = factor_rect(clues[clue_number-2])
         
         elif clue_location_horziontal == "right" and clue_location_vertical == "bottom":
-            clue_rect = factor_rect(clues[clue_number*number_of_clues_found+3])
-    
+            clue_rect = factor_rect(clues[clue_number-1])
+
         if player_rect.colliderect(clue_rect):
             clue_found = True
             textbox("You found a clue!")
@@ -468,6 +478,8 @@ while running == True:
             PRESS_LEFT = False
             PRESS_UP = False
             PRESS_DOWN = False
+            
+    print(clue_found)
     py.display.flip()
     clock.tick(60)
 
