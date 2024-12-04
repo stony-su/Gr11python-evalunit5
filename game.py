@@ -469,15 +469,16 @@ while running == True:
         
         elif clue_location_horziontal == "right" and clue_location_vertical == "bottom":
             clue_rect = factor_rect(clues[clue_number-1])
-
-        if player_rect.colliderect(clue_rect):
-            clue_found = True
-            textbox("You found a clue!")
-            textbox("Now you can go to the next room!")
-            PRESS_RIGHT = False
-            PRESS_LEFT = False
-            PRESS_UP = False
-            PRESS_DOWN = False
+        keys = py.key.get_pressed()
+        if keys[py.K_SPACE]:
+                if player_rect.colliderect(clue_rect):
+                    clue_found = True
+                    textbox("You found a clue!")
+                    textbox("Now you can go to the next room!")
+                    PRESS_RIGHT = False
+                    PRESS_LEFT = False
+                    PRESS_UP = False
+                    PRESS_DOWN = False
             
     print(clue_found)
     py.display.flip()
