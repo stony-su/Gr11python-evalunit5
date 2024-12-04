@@ -61,13 +61,14 @@ global clue_found
 global clue_rect
 global clue_number 
 global clue_menu
+global current_clue
 clue_found = False 
 clue_number = 0
 clue_rect = None
 clue_location_horziontal = "right"
 clue_location_vertical = "top"
 clue_menu = []
-
+current_clue = None
 #Time Track
 clock = py.time.Clock()
 
@@ -119,19 +120,26 @@ def timer (clue):
 
     time = py.time.get_ticks()
     font = py.font.Font(None, 36)
+    font_small = py.font.Font(None, 17)
     text = "Time:  " + str(time/1000)
     text_surface = font.render(text, True, GREY)
 
-    if clue not in clue_menu:
+    if clue not in clue_menu and clue != None:
         clue_menu.append(clue)
     
     y_menu_move = 0
-    n = 0
-    if n in clue_menu:
-        for n in clue_menu:
-            clue_rect = py.Rect(5, 100 + y_menu_move, 400, 700)
-            screen.blit(clue_menu[n], clue_rect)
-            y_menu_move = y_menu_move + 50
+    if clue != None:
+        for n in range(len(clue_menu)):
+            clue_rect_one = py.Rect(25, 150 + y_menu_move, 400, 700)
+            clue_surface_one_half = font_small.render(str(clue_menu[n])[:(len(str(clue_menu[n]))//2)], True, GREY)
+        
+            clue_rect_two = py.Rect(25, 175 + y_menu_move, 400, 700)
+            clue_surface_two_half = font_small.render(str(clue_menu[n])[(len(str(clue_menu[n]))//2):], True, GREY)
+
+            screen.blit(clue_surface_one_half, clue_rect_one)
+            screen.blit(clue_surface_two_half, clue_rect_two)
+
+            y_menu_move = y_menu_move + 75
 
     screen.blit(text_surface, (50, 100))
 
@@ -269,7 +277,7 @@ def room():
         z = z + 1
 
     screen.blit(player, player_rect)
-    timer(None)
+    timer(current_clue)
 
     py.display.flip()
 
@@ -397,7 +405,7 @@ while running == True:
         doors_list.append(factor_rect(x))
         
         if room_remenber_once[y] == True and player_rect.colliderect(doors_list[y]):
-            clue, clue_location_horziontal, clue_location_vertical = clues_place(y) 
+            current_clue, clue_location_horziontal, clue_location_vertical = clues_place(y) 
 
             #loop changes
             room_remenber_once[y] = False   
@@ -419,7 +427,7 @@ while running == True:
                     py.display.flip()
                     py.time.delay(20)
 
-            textbox(clue)
+            textbox(current_clue)
 
             PRESS_RIGHT = False
             PRESS_LEFT = False
