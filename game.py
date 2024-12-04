@@ -111,8 +111,22 @@ def clues_place (y):
 
     clue_number = clue_number + 1
     
+    if clue_location_horziontal == "left" and clue_location_vertical == "top":
+        clue_rect = factor_rect(clues[clue_number*number_of_clues_found])
+        
+    elif clue_location_horziontal == "right" and clue_location_vertical == "top":
+        clue_rect = factor_rect(clues[clue_number*number_of_clues_found+1])
+    
+    elif clue_location_horziontal == "left" and clue_location_vertical == "bottom":
+        clue_rect = factor_rect(clues[clue_number*number_of_clues_found+2])
+    
+    elif clue_location_horziontal == "right" and clue_location_vertical == "bottom":
+        clue_rect = factor_rect(clues[clue_number*number_of_clues_found+3])
 
-    return output_clue, clue_location_horziontal, clue_location_vertical
+
+    return output_clue, clue_rect
+
+
 
 def timer (clue):
     textbox_rect = py.Rect(5, 0, 400, 700)
@@ -398,6 +412,22 @@ while running == True:
 
     player_rect = py.Rect(player_x, player_y, player_width, player_height)
 
+    if clue_found == False:
+        for e in py.event.get():
+            if e.type == py.KEYDOWN:
+                if player_rect.colliderect(clue_rect_local) and e.key == py.K_SPACE:
+                    clue_found = True
+                    textbox("You found a clue!")
+                    PRESS_RIGHT = False
+                    PRESS_LEFT = False
+                    PRESS_UP = False
+                    PRESS_DOWN = False
+                    textbox("Now you can go to the next room!")
+                    PRESS_RIGHT = False
+                    PRESS_LEFT = False
+                    PRESS_UP = False
+                    PRESS_DOWN = False
+                    
     for x in walls:
         rect = factor_rect(x)
         if player_rect.colliderect(rect):
@@ -427,7 +457,7 @@ while running == True:
                     py.time.delay(20)
 
             if y == 0:
-                current_clue, clue_location_horziontal, clue_location_vertical = clues_place(y) 
+                current_clue, clue_rect_local = clues_place(y) 
                 number_of_clues_found = number_of_clues_found + 1
                 textbox(current_clue)
 
@@ -446,21 +476,6 @@ while running == True:
             player_x = previous_x
             player_y = previous_y
             break
-    
-    if clue_found == False:
-
-        if clue_location_horziontal == "left" and clue_location_vertical == "top":
-            clue_rect = factor_rect(clues[clue_number*number_of_clues_found])
-        
-        elif clue_location_horziontal == "right" and clue_location_vertical == "top":
-            clue_rect = factor_rect(clues[clue_number*number_of_clues_found+1])
-        
-        elif clue_location_horziontal == "left" and clue_location_vertical == "bottom":
-            clue_rect = factor_rect(clues[clue_number*number_of_clues_found+2])
-        
-        elif clue_location_horziontal == "right" and clue_location_vertical == "bottom":
-            clue_rect = factor_rect(clues[clue_number*number_of_clues_found+3])
-
 
     py.display.flip()
     clock.tick(60)
