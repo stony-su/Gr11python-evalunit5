@@ -120,7 +120,7 @@ def timer (clue):
 
     time = py.time.get_ticks()
     font = py.font.Font(None, 36)
-    font_small = py.font.Font(None, 17)
+    font_small = py.font.Font(None, 18)
     text = "Time:  " + str(time/1000)
     text_surface = font.render(text, True, GREY)
 
@@ -130,10 +130,10 @@ def timer (clue):
     y_menu_move = 0
     if clue != None:
         for n in range(len(clue_menu)):
-            clue_rect_one = py.Rect(25, 150 + y_menu_move, 400, 700)
+            clue_rect_one = py.Rect(30, 75 + y_menu_move, 400, 700)
             clue_surface_one_half = font_small.render(str(clue_menu[n])[:(len(str(clue_menu[n]))//2)], True, GREY)
         
-            clue_rect_two = py.Rect(25, 175 + y_menu_move, 400, 700)
+            clue_rect_two = py.Rect(25, 100 + y_menu_move, 400, 700)
             clue_surface_two_half = font_small.render(str(clue_menu[n])[(len(str(clue_menu[n]))//2):], True, GREY)
 
             screen.blit(clue_surface_one_half, clue_rect_one)
@@ -141,7 +141,7 @@ def timer (clue):
 
             y_menu_move = y_menu_move + 75
 
-    screen.blit(text_surface, (50, 100))
+    screen.blit(text_surface, (40, 30))
 
 def factor_rect(rect):
     factor = 0.50
