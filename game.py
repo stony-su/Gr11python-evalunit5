@@ -38,6 +38,7 @@ WHITE = (255,255,255)
 RED = (255,0,0)
 GREEN = (0,128,0)
 GREY = (200,200,200)
+YELLOW = (255,255,0)
 
 #movement booleans
 global PRESS_RIGHT
@@ -108,9 +109,6 @@ def clues_place (y):
     
     output_clue = "The %s key to the %s is in the %s %s corner of the %s" %(room_number, next_room, clue_location_vertical, clue_location_horziontal, rooms[y])
 
-    #clue variables
-    clue_found = False  
-    clue_rect = None
     clue_number = clue_number + 1
     
 
@@ -277,8 +275,11 @@ def room():
             py.draw.rect(screen,RED,door)
         elif room_remenber_once[z] == False:
             py.draw.rect(screen,GREEN,door)
-
-        z = z + 1
+            z = z + 1
+    
+    for x in clues:
+        clue_rect = factor_rect(x)
+        py.draw.rect(screen, YELLOW, clue_rect)
 
     screen.blit(player, player_rect)
     timer(current_clue)
@@ -431,7 +432,7 @@ while running == True:
                 textbox(current_clue)
 
             #loop changes  
-            clue_found == False
+            clue_found = False
             entered_doors.append(doors[y])
             y = y + 1
 
@@ -442,9 +443,9 @@ while running == True:
 
 
         elif player_rect.colliderect(door_single) and x not in entered_doors:
-                player_x = previous_x
-                player_y = previous_y
-                break
+            player_x = previous_x
+            player_y = previous_y
+            break
     
     if clue_found == False:
 
@@ -459,18 +460,12 @@ while running == True:
         
         elif clue_location_horziontal == "right" and clue_location_vertical == "bottom":
             clue_rect = factor_rect(clues[clue_number*number_of_clues_found+3])
-    
-        if player_rect.colliderect(clue_rect):
-            clue_found = True
-            textbox("You found a clue!")
-            textbox("Now you can go to the next room!")
-            PRESS_RIGHT = False
-            PRESS_LEFT = False
-            PRESS_UP = False
-            PRESS_DOWN = False
+
+
     py.display.flip()
     clock.tick(60)
 
+    print(clue_found)
 score = number_of_clues_found - py.time.get_ticks()/1000 
 score_file.write("Score: " + str(score))
 
