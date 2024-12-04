@@ -62,13 +62,19 @@ global clue_rect
 global clue_number 
 global clue_menu
 global current_clue
-clue_found = False 
+clue_found = True 
 clue_number = 0
 clue_rect = None
 clue_location_horziontal = "right"
 clue_location_vertical = "top"
 clue_menu = []
 current_clue = None
+
+#Score
+number_of_clues_found = 0
+score_file = open("score.1  ", "w")
+score_file.write("Clues: " + "\n")
+
 #Time Track
 clock = py.time.Clock()
 
@@ -110,10 +116,6 @@ def clues_place (y):
 
     return output_clue, clue_location_horziontal, clue_location_vertical
 
-clues_list = []
-for x in range(1,6):
-    clues_list.append(clues_place)
-
 def timer (clue):
     textbox_rect = py.Rect(5, 0, 400, 700)
     screen.blit(gui_image, textbox_rect)
@@ -126,6 +128,7 @@ def timer (clue):
 
     if clue not in clue_menu and clue != None:
         clue_menu.append(clue)
+        score_file.write(clue + "\n")
     
     y_menu_move = 0
     if clue != None:
@@ -264,6 +267,7 @@ def room():
     for x in walls:
         rect = factor_rect(x)
         py.draw.rect(screen, BLACK, rect)
+
     z = 0
     for rect_num in doors:
         
@@ -404,22 +408,16 @@ while running == True:
         door_single = factor_rect(x)
         doors_list.append(factor_rect(x))
         
-        if room_remenber_once[y] == True and player_rect.colliderect(doors_list[y]):
-            current_clue, clue_location_horziontal, clue_location_vertical = clues_place(y) 
-
-            #loop changes
+        if room_remenber_once[y] == True and player_rect.colliderect(doors_list[y]) and clue_found == True:
             room_remenber_once[y] = False   
-            entered_doors.append(doors[y])
-            y = y + 1
-
-            if y in [1,4,6]:
+            if y in [0,3,5]:
                 for z in range (1,21):
                     player_y = player_y - 5
                     player_rect.y = player_y
                     room()
                     py.display.flip()
                     py.time.delay(20)
-            elif y in [2,3,5]:
+            elif y in [1,2,4]:
                 for z in range (1,21):
                     player_x = player_x + 5
                     player_rect.x = player_x
@@ -427,7 +425,15 @@ while running == True:
                     py.display.flip()
                     py.time.delay(20)
 
-            textbox(current_clue)
+            if y == 0:
+                current_clue, clue_location_horziontal, clue_location_vertical = clues_place(y) 
+                number_of_clues_found = number_of_clues_found + 1
+                textbox(current_clue)
+
+            #loop changes  
+            clue_found == False
+            entered_doors.append(doors[y])
+            y = y + 1
 
             PRESS_RIGHT = False
             PRESS_LEFT = False
@@ -440,19 +446,19 @@ while running == True:
                 player_y = previous_y
                 break
     
-    if not clue_found:
+    if clue_found == False:
 
         if clue_location_horziontal == "left" and clue_location_vertical == "top":
-            clue_rect = factor_rect(clues[clue_number-1])
+            clue_rect = factor_rect(clues[clue_number*number_of_clues_found])
         
-        if clue_location_horziontal == "right" and clue_location_vertical == "top":
-            clue_rect = factor_rect(clues[clue_number])
+        elif clue_location_horziontal == "right" and clue_location_vertical == "top":
+            clue_rect = factor_rect(clues[clue_number*number_of_clues_found+1])
         
-        if clue_location_horziontal == "left" and clue_location_vertical == "bottom":
-            clue_rect = factor_rect(clues[clue_number+1])
+        elif clue_location_horziontal == "left" and clue_location_vertical == "bottom":
+            clue_rect = factor_rect(clues[clue_number*number_of_clues_found+2])
         
-        if clue_location_horziontal == "right" and clue_location_vertical == "bottom":
-            clue_rect = factor_rect(clues[clue_number+2])
+        elif clue_location_horziontal == "right" and clue_location_vertical == "bottom":
+            clue_rect = factor_rect(clues[clue_number*number_of_clues_found+3])
     
         if player_rect.colliderect(clue_rect):
             clue_found = True
@@ -464,4 +470,7 @@ while running == True:
             PRESS_DOWN = False
     py.display.flip()
     clock.tick(60)
+
+score = number_of_clues_found - py.time.get_ticks()/1000 
+score_file.write("Score: " + str(score))
 
