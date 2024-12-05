@@ -429,15 +429,10 @@ while running == True:
                     room()
                     py.display.flip()
                     py.time.delay(20)
-
-            if y == 0:
-                current_clue, clue_location_horziontal, clue_location_vertical = clues_place(y) 
-                number_of_clues_found = number_of_clues_found + 1
-                textbox(current_clue)
-            else:
-                current_clue, clue_location_horziontal, clue_location_vertical = clues_place(y) 
-                number_of_clues_found = number_of_clues_found + 1
-                textbox(current_clue)
+                    
+            current_clue, clue_location_horziontal, clue_location_vertical = clues_place(y) 
+            number_of_clues_found = number_of_clues_found + 1
+            textbox(current_clue)
 
             #loop changes  
             clue_found = False
@@ -473,7 +468,7 @@ while running == True:
         if keys[py.K_SPACE]:
                 if player_rect.colliderect(clue_rect):
                     clue_found = True
-                    textbox("You found a clue!")
+                    textbox("You found the key!")
                     textbox("Now you can go to the next room!")
                     PRESS_RIGHT = False
                     PRESS_LEFT = False
