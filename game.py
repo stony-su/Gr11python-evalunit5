@@ -89,6 +89,11 @@ path = "assets/Characters/walking_frames/"
 south_walk = [path+"south_n1.png", path + "south_walk1.png", path + "south_walk2.png", path + "south_n2.png"]
 
 #clue generation function
+
+def start_menu():
+
+    return
+
 def clues_place (y):
     #global clue_location_horziontal
     #global clue_location_vertical
@@ -126,6 +131,7 @@ def timer (clue):
     font_small = py.font.Font(None, 18)
     text = "Time:  " + str(time/1000) + "s"
     text_surface = font.render(text, True, GREY)
+    screen.blit(text_surface, (40, 30))
 
     if clue not in clue_menu and clue != None:
         clue_menu.append(clue)
@@ -145,7 +151,6 @@ def timer (clue):
 
             y_menu_move = y_menu_move + 75
 
-    screen.blit(text_surface, (40, 30))
 
 def factor_rect(rect):
     factor = 0.50
@@ -429,7 +434,7 @@ while running == True:
                     room()
                     py.display.flip()
                     py.time.delay(20)
-                    
+
             current_clue, clue_location_horziontal, clue_location_vertical = clues_place(y) 
             number_of_clues_found = number_of_clues_found + 1
             textbox(current_clue)
