@@ -107,9 +107,9 @@ def flashlight ():
     w = flashlight_img.get_width()
     h = flashlight_img.get_height()
     room_list_space = [(random.randint(200,500),random.randint(200,900)), (random.randint(600,900),random.randint(400,700)), (random.randint(600,900),random.randint(800,1300))]
-    xy = random.choices(room_list_space)
+    xy = random.choice(room_list_space)
+    print(xy)
     flash_rect = py.Rect(xy[0], xy[1], w, h)
-    screen.blit (flashlight_img, flash_rect)
     return flash_rect
 
 
@@ -311,7 +311,7 @@ def room():
         py.draw.rect(screen, YELLOW, rect_clue)
 
     bathroom_rect = factor_rect(py.Rect(600, 200, 200, 100))
-    while flash_light == False or player_rect.colliderect(bathroom_rect) == False:
+    if flash_light == False or player_rect.colliderect(bathroom_rect) == False:
         py.draw.rect(screen, BLACK, bathroom_rect)
 
     if player_rect.colliderect(bathroom_rect):
@@ -388,6 +388,7 @@ while running == True:
         textbox("hint: spacebar to move through textboxes")
         textbox("controls: arrow keys to move")
         textbox("You are trapped in a house, find the key to escape")
+        flash_rect = flashlight()
         START = False
     
     for e in py.event.get():
@@ -508,11 +509,23 @@ while running == True:
                     PRESS_UP = False
                     PRESS_DOWN = False
 
+    keys = py.key.get_pressed()
     bathroom_rect = factor_rect(py.Rect(600, 200, 200, 100))
-    while flash_light == False:
-        flashlight_rect = flashlight()
+    if flash_light == False:
+        screen.blit (flashlight_img, flash_rect)
+        if player_rect.colliderect(flash_rect):
+            player_x = previous_x
+            player_y = previous_y
+            if keys[py.K_SPACE]:
+                textbox("You found a flashlight!")
+                flash_light == True
+                PRESS_RIGHT = False
+                PRESS_LEFT = False
+                PRESS_UP = False
+                PRESS_DOWN = False
 
-        if player_rect.colliderect(bathroom_rect) or player_rect.colliderect(flashlight_rect):
+
+        if player_rect.colliderect(bathroom_rect):
             player_x = previous_x
             player_y = previous_y
             textbox("It seems that the light in the bathroom is broken")
