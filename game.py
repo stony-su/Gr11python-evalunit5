@@ -109,7 +109,8 @@ def flashlight ():
     room_list_space = [(random.randint(200,500),random.randint(200,900)), (random.randint(600,900),random.randint(400,700)), (random.randint(600,900),random.randint(800,1300))]
     xy = random.choices(room_list_space)
     flash_rect = py.Rect(xy[0], xy[1], w, h)
-    return
+    screen.blit (flashlight_img, flash_rect)
+    return flash_rect
 
 
 
@@ -509,10 +510,13 @@ while running == True:
 
     bathroom_rect = factor_rect(py.Rect(600, 200, 200, 100))
     while flash_light == False:
-        if player_rect.colliderect(bathroom_rect):
+        flashlight_rect = flashlight()
+
+        if player_rect.colliderect(bathroom_rect) or player_rect.colliderect(flashlight_rect):
             player_x = previous_x
             player_y = previous_y
             textbox("It seems that the light in the bathroom is broken")
+
 
             
     print(clue_found)
