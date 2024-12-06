@@ -36,6 +36,9 @@ move_rate = 10
 BLACK = (0,0,0)
 WHITE = (255,255,255)
 YELLOW = (255,255,0)
+FAINT_YELLOW_1 = (255,253,175)
+FAINT_YELLOW_2 = (255,253,141)
+FAINT_YELLOW_HALF = (255,254,224)
 RED = (255,0,0)
 GREEN = (0,128,0)
 GREY = (200,200,200)
@@ -74,6 +77,7 @@ current_clue = None
 #Objects
 global flash_light
 flash_light = False
+flashlight_img = py.image.load("assets/object_keys/flashlight.png")
 
 #Score
 number_of_clues_found = 0
@@ -95,6 +99,10 @@ south_walk = [path+"south_n1.png", path + "south_walk1.png", path + "south_walk2
 #clue generation function
 
 def start_menu():
+
+    return
+
+def flashlight ():
 
     return
 
@@ -296,12 +304,12 @@ def room():
         rect_clue = factor_rect(rect)
         py.draw.rect(screen, YELLOW, rect_clue)
 
-    black_rect = factor_rect(py.Rect(600, 200, 200, 100))
-    while flash_light == False or player_rect.colliderect(black_rect) == False:
-        py.draw.rect(screen, BLACK, black_rect)
+    bathroom_rect = factor_rect(py.Rect(600, 200, 200, 100))
+    while flash_light == False or player_rect.colliderect(bathroom_rect) == False:
+        py.draw.rect(screen, BLACK, bathroom_rect)
 
-    if player_rect.colliderect(black_rect):
-        py.draw.rect(screen, YELLOW, black_rect)
+    if player_rect.colliderect(bathroom_rect):
+        py.draw.rect(screen, FAINT_YELLOW_1, bathroom_rect)
 
 
     screen.blit(player, player_rect)
@@ -494,9 +502,9 @@ while running == True:
                     PRESS_UP = False
                     PRESS_DOWN = False
 
+    bathroom_rect = factor_rect(py.Rect(600, 200, 200, 100))
     while flash_light == False:
-        black_rect = factor_rect(py.Rect(600, 200, 200, 100))
-        if player_rect.colliderect(black_rect):
+        if player_rect.colliderect(bathroom_rect):
             player_x = previous_x
             player_y = previous_y
             textbox("It seems that the light in the bathroom is broken")
