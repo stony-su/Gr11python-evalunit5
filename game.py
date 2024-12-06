@@ -71,6 +71,10 @@ clue_location_vertical = "top"
 clue_menu = []
 current_clue = None
 
+#Objects
+global flash_light
+flash_light = False
+
 #Score
 number_of_clues_found = 0
 score_file = open("score.1  ", "w")
@@ -292,6 +296,14 @@ def room():
         rect_clue = factor_rect(rect)
         py.draw.rect(screen, YELLOW, rect_clue)
 
+    black_rect = factor_rect(py.Rect(600, 200, 200, 100))
+    while flash_light == False or player_rect.colliderect(black_rect) == False:
+        py.draw.rect(screen, BLACK, black_rect)
+
+    if player_rect.colliderect(black_rect):
+        py.draw.rect(screen, YELLOW, black_rect)
+
+
     screen.blit(player, player_rect)
     timer(current_clue)
 
@@ -481,6 +493,14 @@ while running == True:
                     PRESS_LEFT = False
                     PRESS_UP = False
                     PRESS_DOWN = False
+
+    while flash_light == False:
+        black_rect = factor_rect(py.Rect(600, 200, 200, 100))
+        if player_rect.colliderect(black_rect):
+            player_x = previous_x
+            player_y = previous_y
+            textbox("It seems that the light in the bathroom is broken")
+
             
     print(clue_found)
     py.display.flip()
