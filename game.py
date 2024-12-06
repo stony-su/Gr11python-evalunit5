@@ -107,7 +107,8 @@ def flashlight ():
     w = flashlight_img.get_width()
     h = flashlight_img.get_height()
     room_list_space = [(random.randint(200,500),random.randint(200,900)), (random.randint(600,900),random.randint(400,700)), (random.randint(600,900),random.randint(800,1300))]
-    flash_rect = py.Rect()
+    xy = random.choices(room_list_space)
+    flash_rect = py.Rect(xy[0], xy[1], w, h)
     return
 
 
