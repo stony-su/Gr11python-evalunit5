@@ -94,6 +94,8 @@ def start_menu():
 
     return
 
+
+
 def clues_place (y):
     #global clue_location_horziontal
     #global clue_location_vertical
