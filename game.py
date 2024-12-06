@@ -90,6 +90,20 @@ south_walk = [path+"south_n1.png", path + "south_walk1.png", path + "south_walk2
 
 #clue generation function
 
+def button(screen,button,mx,my):
+    screen.fill(WHITE)
+    
+    py.draw.rect(screen, GRAY, rectangle)
+    py.draw.rect(screen, BLACK, rectangle, 3)
+    
+    if py.rectangle.collidepoint(mx,my) and button == 1:
+        draw.rect(screen, YELLOW, rectangle)
+        draw.rect(screen, BLACK, rectangle, 2) 
+    
+    string = str(button)
+    text = myFont.render(string, True, RED)
+    screen.blit(text, (240,225))
+    display.flip()
 def start_menu():
 
     return
