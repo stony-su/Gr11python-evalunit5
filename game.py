@@ -35,6 +35,10 @@ move_rate = 10
 #Colors
 BLACK = (0,0,0)
 WHITE = (255,255,255)
+YELLOW = (255,255,0)
+FAINT_YELLOW_1 = (255,253,175)
+FAINT_YELLOW_2 = (255,253,141)
+FAINT_YELLOW_HALF = (255,254,224)
 RED = (255,0,0)
 GREEN = (0,128,0)
 GREY = (200,200,200)
@@ -71,6 +75,12 @@ clue_location_vertical = "top"
 clue_menu = []
 current_clue = None
 
+#Objects
+global flash_light
+global flashlight_img
+flash_light = False
+flashlight_img = py.image.load("assets/object_keys/flashlight.png")
+
 #Score
 number_of_clues_found = 0
 score_file = open("score.1  ", "w")
@@ -89,6 +99,36 @@ path = "assets/Characters/walking_frames/"
 south_walk = [path+"south_n1.png", path + "south_walk1.png", path + "south_walk2.png", path + "south_n2.png"]
 
 #clue generation function
+
+def button(screen,button,mx,my):
+    screen.fill(WHITE)
+    
+    py.draw.rect(screen, GRAY, rectangle)
+    py.draw.rect(screen, BLACK, rectangle, 3)
+    
+    if py.rectangle.collidepoint(mx,my) and button == 1:
+        draw.rect(screen, YELLOW, rectangle)
+        draw.rect(screen, BLACK, rectangle, 2) 
+    
+    string = str(button)
+    text = myFont.render(string, True, RED)
+    screen.blit(text, (240,225))
+    display.flip()
+def start_menu():
+
+    return
+
+def flashlight ():
+    w = flashlight_img.get_width()
+    h = flashlight_img.get_height()
+    room_list_space = [(random.randint(200,500),random.randint(200,900)), (random.randint(600,900),random.randint(400,700)), (random.randint(600,900),random.randint(800,1300))]
+    xy = random.choice(room_list_space)
+    print(xy)
+    flash_rect = py.Rect(xy[0], xy[1], w, h)
+    return flash_rect
+
+
+
 def clues_place (y):
     #global clue_location_horziontal
     #global clue_location_vertical
@@ -109,7 +149,10 @@ def clues_place (y):
     
     output_clue = "The %s key to the %s is in the %s %s corner of the %s" %(room_number, next_room, clue_location_vertical, clue_location_horziontal, rooms[y])
 
-    clue_number = clue_number + 1
+    #clue variables
+    clue_found = False  
+    clue_rect = None
+    clue_number = clue_number + 4
     
     if clue_location_horziontal == "left" and clue_location_vertical == "top":
         clue_rect = factor_rect(clues[clue_number*number_of_clues_found])
@@ -135,8 +178,9 @@ def timer (clue):
     time = py.time.get_ticks()
     font = py.font.Font(None, 36)
     font_small = py.font.Font(None, 18)
-    text = "Time:  " + str(time/1000)
+    text = "Time:  " + str(time/1000) + "s"
     text_surface = font.render(text, True, GREY)
+    screen.blit(text_surface, (40, 30))
 
     if clue not in clue_menu and clue != None:
         clue_menu.append(clue)
@@ -156,7 +200,6 @@ def timer (clue):
 
             y_menu_move = y_menu_move + 75
 
-    screen.blit(text_surface, (40, 30))
 
 def factor_rect(rect):
     factor = 0.50
@@ -295,6 +338,18 @@ def room():
         clue_rect = factor_rect(x)
         py.draw.rect(screen, YELLOW, clue_rect)
 
+    for rect in clues:
+        rect_clue = factor_rect(rect)
+        py.draw.rect(screen, YELLOW, rect_clue)
+
+    bathroom_rect = factor_rect(py.Rect(600, 200, 200, 100))
+    if flash_light == False or player_rect.colliderect(bathroom_rect) == False:
+        py.draw.rect(screen, BLACK, bathroom_rect)
+
+    if player_rect.colliderect(bathroom_rect):
+        py.draw.rect(screen, FAINT_YELLOW_1, bathroom_rect)
+
+
     screen.blit(player, player_rect)
     timer(current_clue)
 
@@ -365,6 +420,7 @@ while running == True:
         textbox("hint: spacebar to move through textboxes")
         textbox("controls: arrow keys to move")
         textbox("You are trapped in a house, find the key to escape")
+        flash_rect = flashlight()
         START = False
     
     for e in py.event.get():
@@ -463,6 +519,13 @@ while running == True:
 
             #loop changes  
             clue_found = False
+            current_clue, clue_location_horziontal, clue_location_vertical = clues_place(y) 
+            number_of_clues_found = number_of_clues_found + 1
+            textbox(current_clue)
+
+            #loop changes  
+            clue_found = False
+            print("falsed")
             entered_doors.append(doors[y])
             y = y + 1
 
@@ -477,6 +540,52 @@ while running == True:
             player_y = previous_y
             break
 
+        if clue_location_horziontal == "left" and clue_location_vertical == "top":
+            clue_rect = factor_rect(clues[clue_number-4])
+        
+        elif clue_location_horziontal == "right" and clue_location_vertical == "top":
+            clue_rect = factor_rect(clues[clue_number-3])
+        
+        elif clue_location_horziontal == "left" and clue_location_vertical == "bottom":
+            clue_rect = factor_rect(clues[clue_number-2])
+        
+        elif clue_location_horziontal == "right" and clue_location_vertical == "bottom":
+            clue_rect = factor_rect(clues[clue_number-1])
+        keys = py.key.get_pressed()
+        if keys[py.K_SPACE]:
+                if player_rect.colliderect(clue_rect):
+                    clue_found = True
+                    textbox("You found the key!")
+                    textbox("Now you can go to the next room!")
+                    PRESS_RIGHT = False
+                    PRESS_LEFT = False
+                    PRESS_UP = False
+                    PRESS_DOWN = False
+
+    keys = py.key.get_pressed()
+    bathroom_rect = factor_rect(py.Rect(600, 200, 200, 100))
+    if flash_light == False:
+        screen.blit (flashlight_img, flash_rect)
+        if player_rect.colliderect(flash_rect):
+            player_x = previous_x
+            player_y = previous_y
+            if keys[py.K_SPACE]:
+                textbox("You found a flashlight!")
+                flash_light == True
+                PRESS_RIGHT = False
+                PRESS_LEFT = False
+                PRESS_UP = False
+                PRESS_DOWN = False
+
+
+        if player_rect.colliderect(bathroom_rect):
+            player_x = previous_x
+            player_y = previous_y
+            textbox("It seems that the light in the bathroom is broken")
+
+
+            
+    print(clue_found)
     py.display.flip()
     clock.tick(60)
 
