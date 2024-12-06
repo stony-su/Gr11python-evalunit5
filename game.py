@@ -36,6 +36,9 @@ move_rate = 10
 BLACK = (0,0,0)
 WHITE = (255,255,255)
 YELLOW = (255,255,0)
+FAINT_YELLOW_1 = (255,253,175)
+FAINT_YELLOW_2 = (255,253,141)
+FAINT_YELLOW_HALF = (255,254,224)
 RED = (255,0,0)
 GREEN = (0,128,0)
 GREY = (200,200,200)
@@ -70,6 +73,12 @@ clue_location_horziontal = "right"
 clue_location_vertical = "top"
 clue_menu = []
 current_clue = None
+
+#Objects
+global flash_light
+global flashlight_img
+flash_light = False
+flashlight_img = py.image.load("assets/object_keys/flashlight.png")
 
 #Score
 number_of_clues_found = 0
@@ -107,6 +116,17 @@ def button(screen,button,mx,my):
 def start_menu():
 
     return
+
+def flashlight ():
+    w = flashlight_img.get_width()
+    h = flashlight_img.get_height()
+    room_list_space = [(random.randint(200,500),random.randint(200,900)), (random.randint(600,900),random.randint(400,700)), (random.randint(600,900),random.randint(800,1300))]
+    xy = random.choice(room_list_space)
+    print(xy)
+    flash_rect = py.Rect(xy[0], xy[1], w, h)
+    return flash_rect
+
+
 
 def clues_place (y):
     #global clue_location_horziontal
@@ -304,6 +324,14 @@ def room():
         rect_clue = factor_rect(rect)
         py.draw.rect(screen, YELLOW, rect_clue)
 
+    bathroom_rect = factor_rect(py.Rect(600, 200, 200, 100))
+    if flash_light == False or player_rect.colliderect(bathroom_rect) == False:
+        py.draw.rect(screen, BLACK, bathroom_rect)
+
+    if player_rect.colliderect(bathroom_rect):
+        py.draw.rect(screen, FAINT_YELLOW_1, bathroom_rect)
+
+
     screen.blit(player, player_rect)
     timer(current_clue)
 
@@ -374,6 +402,7 @@ while running == True:
         textbox("hint: spacebar to move through textboxes")
         textbox("controls: arrow keys to move")
         textbox("You are trapped in a house, find the key to escape")
+        flash_rect = flashlight()
         START = False
     
     for e in py.event.get():
@@ -493,6 +522,29 @@ while running == True:
                     PRESS_LEFT = False
                     PRESS_UP = False
                     PRESS_DOWN = False
+
+    keys = py.key.get_pressed()
+    bathroom_rect = factor_rect(py.Rect(600, 200, 200, 100))
+    if flash_light == False:
+        screen.blit (flashlight_img, flash_rect)
+        if player_rect.colliderect(flash_rect):
+            player_x = previous_x
+            player_y = previous_y
+            if keys[py.K_SPACE]:
+                textbox("You found a flashlight!")
+                flash_light == True
+                PRESS_RIGHT = False
+                PRESS_LEFT = False
+                PRESS_UP = False
+                PRESS_DOWN = False
+
+
+        if player_rect.colliderect(bathroom_rect):
+            player_x = previous_x
+            player_y = previous_y
+            textbox("It seems that the light in the bathroom is broken")
+
+
             
     print(clue_found)
     py.display.flip()
