@@ -76,6 +76,7 @@ current_clue = None
 
 #Objects
 global flash_light
+global flashlight_img
 flash_light = False
 flashlight_img = py.image.load("assets/object_keys/flashlight.png")
 
@@ -103,7 +104,10 @@ def start_menu():
     return
 
 def flashlight ():
-
+    w = flashlight_img.get_width()
+    h = flashlight_img.get_height()
+    room_list_space = [(random.randint(),random.randint()), (random.randint(),random.randint()), (random.randint(),random.randint()), (random.randint(),random.randint())]
+    flash_rect = py.Rect()
     return
 
 
