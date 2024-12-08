@@ -80,6 +80,9 @@ global flash_light
 global flashlight_img
 flash_light = False
 flashlight_img = py.image.load("assets/object_keys/flashlight.png")
+flash_w = flashlight_img.get_width()//10
+flash_h = flashlight_img.get_height()//10
+flashlight_img =  py.transform.scale (flashlight_img, (flash_w, flash_h))
 
 #Score
 number_of_clues_found = 0
@@ -118,17 +121,6 @@ def start_menu():
 
     return
 
-def flashlight ():
-    w = flashlight_img.get_width()
-    h = flashlight_img.get_height()
-    room_list_space = [(random.randint(200,500),random.randint(200,900)), (random.randint(600,900),random.randint(400,700)), (random.randint(600,900),random.randint(800,1300))]
-    xy = random.choice(room_list_space)
-    print(xy)
-    flash_rect = py.Rect(xy[0], xy[1], w, h)
-    return flash_rect
-
-
-
 def clues_place (y):
     #global clue_location_horziontal
     #global clue_location_vertical
@@ -150,24 +142,9 @@ def clues_place (y):
     output_clue = "The %s key to the %s is in the %s %s corner of the %s" %(room_number, next_room, clue_location_vertical, clue_location_horziontal, rooms[y])
 
     #clue variables
-    clue_found = False  
-    clue_rect = None
     clue_number = clue_number + 4
-    
-    if clue_location_horziontal == "left" and clue_location_vertical == "top":
-        clue_rect = factor_rect(clues[clue_number*number_of_clues_found])
-        
-    elif clue_location_horziontal == "right" and clue_location_vertical == "top":
-        clue_rect = factor_rect(clues[clue_number*number_of_clues_found+1])
-    
-    elif clue_location_horziontal == "left" and clue_location_vertical == "bottom":
-        clue_rect = factor_rect(clues[clue_number*number_of_clues_found+2])
-    
-    elif clue_location_horziontal == "right" and clue_location_vertical == "bottom":
-        clue_rect = factor_rect(clues[clue_number*number_of_clues_found+3])
 
-
-    return output_clue, clue_rect
+    return output_clue, clue_location_horziontal, clue_location_vertical
 
 
 
@@ -210,7 +187,22 @@ def factor_rect(rect):
 
     #this scales the walls, as well as centers it
     return py.Rect(rect.x * factor + x_move, rect.y * factor - y_move, rect.width * width_factor, rect.height * height_factor)
-     #ask if ok
+
+def flashlight ():
+    global w
+    w = flashlight_img.get_width()//10
+    print(w)
+    h = flashlight_img.get_height()//10
+    def margin (x):
+        return x - 50z
+    room_list_space = [(random.randint(200,margin(500)),random.randint(200,margin(900))), (random.randint(600,margin(900)),random.randint(400,margin(700))), (random.randint(600,margin(900)),random.randint(800,margin(1300)))]
+    xy = random.choice(room_list_space)
+    print(xy)
+    flash_rect = factor_rect(py.Rect(xy[0], xy[1], w+70, h+70))   
+    return flash_rect
+
+global flash_rect_global
+flash_rect_global = flashlight()
 
 def room():
     screen.fill(WHITE)
@@ -342,12 +334,15 @@ def room():
         rect_clue = factor_rect(rect)
         py.draw.rect(screen, YELLOW, rect_clue)
 
-    bathroom_rect = factor_rect(py.Rect(600, 200, 200, 100))
+    bathroom_rect = factor_rect(py.Rect(600, 200, 300, 100))
     if flash_light == False or player_rect.colliderect(bathroom_rect) == False:
         py.draw.rect(screen, BLACK, bathroom_rect)
 
     if player_rect.colliderect(bathroom_rect):
         py.draw.rect(screen, FAINT_YELLOW_1, bathroom_rect)
+
+    if flash_light == False:
+        screen.blit (flashlight_img, flash_rect_global)
 
 
     screen.blit(player, player_rect)
@@ -414,13 +409,11 @@ def textbox (text):
 
 doors_list = []
 while running == True:
-    
 
     if START == True:
         textbox("hint: spacebar to move through textboxes")
         textbox("controls: arrow keys to move")
         textbox("You are trapped in a house, find the key to escape")
-        flash_rect = flashlight()
         START = False
     
     for e in py.event.get():
@@ -467,22 +460,6 @@ while running == True:
         player_y = player_y + move_rate
 
     player_rect = py.Rect(player_x, player_y, player_width, player_height)
-
-    if clue_found == False:
-        for e in py.event.get():
-            if e.type == py.KEYDOWN:
-                if player_rect.colliderect(clue_rect_local) and e.key == py.K_SPACE:
-                    clue_found = True
-                    textbox("You found a clue!")
-                    PRESS_RIGHT = False
-                    PRESS_LEFT = False
-                    PRESS_UP = False
-                    PRESS_DOWN = False
-                    textbox("Now you can go to the next room!")
-                    PRESS_RIGHT = False
-                    PRESS_LEFT = False
-                    PRESS_UP = False
-                    PRESS_DOWN = False
                     
     for x in walls:
         rect = factor_rect(x)
@@ -497,35 +474,14 @@ while running == True:
         
         if room_remenber_once[y] == True and player_rect.colliderect(doors_list[y]) and clue_found == True:
             room_remenber_once[y] = False   
-            if y in [0,3,5]:
-                for z in range (1,21):
-                    player_y = player_y - 5
-                    player_rect.y = player_y
-                    room()
-                    py.display.flip()
-                    py.time.delay(20)
-            elif y in [1,2,4]:
-                for z in range (1,21):
-                    player_x = player_x + 5
-                    player_rect.x = player_x
-                    room()
-                    py.display.flip()
-                    py.time.delay(20)
-
-            if y == 0:
-                current_clue, clue_rect_local = clues_place(y) 
-                number_of_clues_found = number_of_clues_found + 1
-                textbox(current_clue)
-
+    
             #loop changes  
-            clue_found = False
-            current_clue, clue_location_horziontal, clue_location_vertical = clues_place(y) 
+            current_clue, clue_location_horziontal, clue_location_vertical  = clues_place(y) 
             number_of_clues_found = number_of_clues_found + 1
             textbox(current_clue)
 
             #loop changes  
             clue_found = False
-            print("falsed")
             entered_doors.append(doors[y])
             y = y + 1
 
@@ -539,6 +495,8 @@ while running == True:
             player_x = previous_x
             player_y = previous_y
             break
+        
+    if clue_found == False:
 
         if clue_location_horziontal == "left" and clue_location_vertical == "top":
             clue_rect = factor_rect(clues[clue_number-4])
@@ -551,45 +509,43 @@ while running == True:
         
         elif clue_location_horziontal == "right" and clue_location_vertical == "bottom":
             clue_rect = factor_rect(clues[clue_number-1])
+
         keys = py.key.get_pressed()
         if keys[py.K_SPACE]:
-                if player_rect.colliderect(clue_rect):
-                    clue_found = True
-                    textbox("You found the key!")
-                    textbox("Now you can go to the next room!")
-                    PRESS_RIGHT = False
-                    PRESS_LEFT = False
-                    PRESS_UP = False
-                    PRESS_DOWN = False
-
-    keys = py.key.get_pressed()
-    bathroom_rect = factor_rect(py.Rect(600, 200, 200, 100))
-    if flash_light == False:
-        screen.blit (flashlight_img, flash_rect)
-        if player_rect.colliderect(flash_rect):
-            player_x = previous_x
-            player_y = previous_y
-            if keys[py.K_SPACE]:
-                textbox("You found a flashlight!")
-                flash_light == True
+            if player_rect.colliderect(clue_rect):
+                clue_found = True
+                textbox("You found the key!")
+                textbox("Now you can go to the next room!")
                 PRESS_RIGHT = False
                 PRESS_LEFT = False
                 PRESS_UP = False
                 PRESS_DOWN = False
 
+    bathroom_rect = factor_rect(py.Rect(600, 200, 200, 100))
+    keys = py.key.get_pressed()
+
+    if flash_light == False:
+        if player_rect.colliderect(flash_rect_global):
+            if keys[py.K_SPACE]:
+                textbox("You found a flashlight!")
+                flash_light = True
+                PRESS_RIGHT = False
+                PRESS_LEFT = False
+                PRESS_UP = False
+                PRESS_DOWN = False
 
         if player_rect.colliderect(bathroom_rect):
             player_x = previous_x
-            player_y = previous_y
+            player_y = previous_y       
             textbox("It seems that the light in the bathroom is broken")
+            PRESS_RIGHT = False
+            PRESS_LEFT = False
+            PRESS_UP = False
+            PRESS_DOWN = False
 
-
-            
-    print(clue_found)
     py.display.flip()
     clock.tick(60)
 
-    print(clue_found)
 score = number_of_clues_found - py.time.get_ticks()/1000 
 score_file.write("Score: " + str(score))
 
