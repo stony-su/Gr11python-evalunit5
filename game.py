@@ -198,7 +198,7 @@ def start_menu():
             py.draw.polygon(screen, BUTTON, [(375, 250), (330, 225), (330, 275)])
 
         if 740 > mouse_y_scroll > 550:
-            py.draw.polygon(screen, BUTTON, [(375, 637), (330, 575), (330, 700)])
+            py.draw.polygon(screen, BUTTON, [(385, 590), (340, 570), (340, 612)])
 
 
         #Character selection
@@ -572,10 +572,23 @@ while running == True:
                 walk_frame = walk_frame + 3
             else: 
                 walk_frame = 2
+
         walk_slowed = walk_slowed + 2
         player_x = player_x + move_rate
 
     if PRESS_LEFT == True: 
+        if first_left == True:
+            walk_frame = 2
+        if walk_slowed % 10 == 0:
+            if walk_frame < 12:
+                player = char_one_walk[0 + walk_frame]
+                player =  py.transform.scale (player, (player_height, player_width))
+                player = py.transform.flip(player, True, False)
+                walk_frame = walk_frame + 3
+            else: 
+                walk_frame = 2
+
+        walk_slowed = walk_slowed + 2
         player_x = player_x - move_rate
 
     if PRESS_UP == True: 
