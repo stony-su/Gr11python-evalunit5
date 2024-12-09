@@ -42,7 +42,18 @@ FAINT_YELLOW_HALF = (255,254,224)
 RED = (255,0,0)
 GREEN = (0,128,0)
 GREY = (200,200,200)
-YELLOW = (255,255,0)
+GRAY = (237,233,223)
+BLUE = (65,182,232)
+LIGHT_GRAY = (211, 211, 211)
+PURPLE = (211,144,240)
+
+
+#start menu colors
+BACKGROUND = (16, 30, 31)
+BUTTON = (254, 173, 65)
+BUTTON_FILL = (104, 56, 46)
+BUTTON_FILL_CLICK = (84, 36, 24)
+
 
 #movement booleans
 global PRESS_RIGHT
@@ -94,36 +105,56 @@ clock = py.time.Clock()
 
 #screen 
 screen = py.display.set_mode((1000, 700))
-screen.fill(WHITE)
+screen.fill(BACKGROUND)
 
 #Walking Animation
 path = "assets/Characters/walking_frames/"
 
 south_walk = [path+"south_n1.png", path + "south_walk1.png", path + "south_walk2.png", path + "south_n2.png"]
 
-#clue generation function
+#Button Function
 
-def button(screen,button,mx,my):
-    screen.fill(WHITE)
-    
-    py.draw.rect(screen, GRAY, rectangle)
-    py.draw.rect(screen, BLACK, rectangle, 3)
-    
-    if py.rectangle.collidepoint(mx,my) and button == 1:
-        draw.rect(screen, YELLOW, rectangle)
-        draw.rect(screen, BLACK, rectangle, 2) 
-    
-    string = str(button)
-    text = myFont.render(string, True, RED)
-    screen.blit(text, (240,225))
-    display.flip()
 def start_menu():
+    start_menu_boolean = True
+    mx, my, mouse_button, mouse_y_scroll = 0, 0, 0, 0 
+    new_roman = py.font.SysFont("Times New Roman", 50)
+    rectangle = py.Rect(400, 200, 200, 100)
+
+    while start_menu_boolean == True:
+
+        py.draw.rect(screen, BUTTON_FILL, rectangle)
+        py.draw.rect(screen, BUTTON, rectangle, 5)
+
+        if rectangle.collidepoint(mx, my) and mouse_button == 1:
+            py.draw.rect(screen, BUTTON_FILL_CLICK, rectangle)
+            py.display.flip()
+            py.time.delay(100)
+            start_menu_boolean = False    
+
+        button_text = new_roman.render("start", True, BUTTON)
+        screen.blit(button_text, (460, 225))
+
+        if 300 > mouse_y_scroll > 200:
+            py.draw.polygon(screen, BUTTON, [(384, 248), (329, 216), (329, 296)])
+        
+        print(mx, my)
+
+        # Event handling
+        for e in py.event.get():
+            mouse_y_scroll = e.pos
+            if e.type == py.MOUSEBUTTONDOWN:
+                mx, my = e.pos
+                mouse_button = e.button
+        
+        
+        py.display.flip()
+
+    screen.fill(WHITE)
 
     return
 
+#clue generation function
 def clues_place (y):
-    #global clue_location_horziontal
-    #global clue_location_vertical
     global clue_number
 
     rooms = ["Hallway", "Living Room", "Bedroom", "Bathroom", "Kitchen", "Dining Room", "Treasure"]
@@ -191,13 +222,11 @@ def factor_rect(rect):
 def flashlight ():
     global w
     w = flashlight_img.get_width()//10
-    print(w)
     h = flashlight_img.get_height()//10
     def margin (x):
-        return x - 50z
+        return x - 50
     room_list_space = [(random.randint(200,margin(500)),random.randint(200,margin(900))), (random.randint(600,margin(900)),random.randint(400,margin(700))), (random.randint(600,margin(900)),random.randint(800,margin(1300)))]
     xy = random.choice(room_list_space)
-    print(xy)
     flash_rect = factor_rect(py.Rect(xy[0], xy[1], w+70, h+70))   
     return flash_rect
 
@@ -351,7 +380,6 @@ def room():
     py.display.flip()
 
 def textbox (text):
-    print(text)
     text = str(text)
     textbox_rect = py.Rect(150, 400, 500, 100)
     screen.blit(textbox_image, textbox_rect)
@@ -411,6 +439,7 @@ doors_list = []
 while running == True:
 
     if START == True:
+        start_menu()
         textbox("hint: spacebar to move through textboxes")
         textbox("controls: arrow keys to move")
         textbox("You are trapped in a house, find the key to escape")
