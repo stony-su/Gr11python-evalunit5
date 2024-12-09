@@ -18,7 +18,6 @@ global running
 running = True
 
 #Images
-player = py.image.load('assets/Characters/walking_frames/south_n1.png')
 textbox_image = py.image.load('assets/textbox/textbox.png')
 gui_image = py.image.load('assets/textbox/clues_box.png')
 
@@ -26,11 +25,8 @@ gui_image = py.image.load('assets/textbox/clues_box.png')
 player_x = 200*0.45
 player_y = 1100*0.45
 
-#setup player
-player_width = player.get_width() *2
-player_height = player.get_height() *2
-player =  py.transform.scale (player, (player_height, player_width))
-move_rate = 10
+#setup player movement
+move_rate = 5
 
 #Colors
 BLACK = (0,0,0)
@@ -105,25 +101,87 @@ clock = py.time.Clock()
 
 #screen 
 screen = py.display.set_mode((1000, 700))
-screen.fill(BACKGROUND)
+screen.fill(WHITE)
 
 #Walking Animation
-path = "assets/Characters/walking_frames/"
+spritesheets = [
+'assets/spritesheets/1 walk.png',
+'assets/spritesheets/2 walk.png',
+"assets/spritesheets/3 walk.png",
+"assets/spritesheets/4 walk.png",
+"assets/spritesheets/5 walk.png",
+"assets/spritesheets/6 walk.png",
+"assets/spritesheets/7 walk.png",
+"assets/spritesheets/8 walk.png",
+"assets/spritesheets/9 walk.png",
+"assets/spritesheets/10 walk.png"
+]
 
-south_walk = [path+"south_n1.png", path + "south_walk1.png", path + "south_walk2.png", path + "south_n2.png"]
+def load_sprite_images(filename, num_rows, num_cols):
+    x_margin = 0
+    x_padding = 0
+    y_margin = 0 
+    y_padding = 0
+    sheet = py.image.load(filename).convert()
+    
+    def image_at(sheet, rectangle):
+        rect = py.Rect(rectangle)
+        image = py.Surface(rect.size).convert()
+        image.blit(sheet, (0, 0), rect)
+
+        colorkey = image.get_at((0, 0))
+        image.set_colorkey(colorkey, py.RLEACCEL)
+        return image   
+
+    sheet_rect = sheet.get_rect()
+    sheet_width, sheet_height = sheet_rect.size
+    x_sprite_size = (sheet_width - 2 * x_margin - (num_cols - 1) * x_padding) / num_cols
+    y_sprite_size = (sheet_height - 2 * y_margin - (num_rows - 1) * y_padding) / num_rows
+
+    sprite_rects = []
+    for row_num in range(num_rows):
+        for col_num in range(num_cols):
+            x = x_margin + col_num * (x_sprite_size + x_padding)
+            y = y_margin + row_num * (y_sprite_size + y_padding)
+            sprite_rect = (x, y, x_sprite_size, y_sprite_size)
+            sprite_rects.append(sprite_rect)
+
+    grid_images = [image_at(sheet, rect) for rect in sprite_rects]
+    
+    return grid_images
 
 #Button Function
-
 def start_menu():
     start_menu_boolean = True
-    mx, my, mouse_button, mouse_y_scroll = 0, 0, 0, 0 
+    mx = 0
+    my = 0 
+    mouse_button = 0
+    mouse_y_scroll = 0
+    mouse_x_scroll = 0
     new_roman = py.font.SysFont("Times New Roman", 50)
+    new_roman_small = py.font.SysFont("Times New Roman", 30)
     rectangle = py.Rect(400, 200, 200, 100)
+    next_char = py.Rect(405, 550, 190, 80)
+    character_select = 0
+    char_one_walk = load_sprite_images(spritesheets[0], 4, 3)
+    player = char_one_walk[0]
+    player_width = player.get_width() *10
+    player_height = player.get_height() *10
+    player =  py.transform.scale (player, (player_height, player_width))
+    click = False
 
     while start_menu_boolean == True:
-
+        for e in py.event.get():
+            mouse_y_scroll = py.mouse.get_pos()[1]
+            mouse_x_scroll = py.mouse.get_pos()[0]
+            if e.type == py.MOUSEBUTTONDOWN:
+                mx, my = e.pos
+                mouse_button = e.button
+                
+        screen.fill(BACKGROUND)
         py.draw.rect(screen, BUTTON_FILL, rectangle)
         py.draw.rect(screen, BUTTON, rectangle, 5)
+        py.draw.rect(screen,BUTTON_FILL, next_char)
 
         if rectangle.collidepoint(mx, my) and mouse_button == 1:
             py.draw.rect(screen, BUTTON_FILL_CLICK, rectangle)
@@ -133,25 +191,44 @@ def start_menu():
 
         button_text = new_roman.render("start", True, BUTTON)
         screen.blit(button_text, (460, 225))
+        char_text = new_roman_small.render("next character", True, BUTTON)
+        screen.blit(char_text, (415, 570))
 
         if 300 > mouse_y_scroll > 200:
-            py.draw.polygon(screen, BUTTON, [(384, 248), (329, 216), (329, 296)])
-        
-        print(mx, my)
+            py.draw.polygon(screen, BUTTON, [(375, 250), (330, 225), (330, 275)])
 
-        # Event handling
-        for e in py.event.get():
-            mouse_y_scroll = e.pos
-            if e.type == py.MOUSEBUTTONDOWN:
-                mx, my = e.pos
-                mouse_button = e.button
+        if 740 > mouse_y_scroll > 550:
+            py.draw.polygon(screen, BUTTON, [(375, 637), (330, 575), (330, 700)])
+
+
+        #Character selection
+        if next_char.collidepoint(mouse_x_scroll, mouse_y_scroll) and mouse_button == 1:
+            character_select = character_select + 1
+            click = True
+            if character_select > 9:
+                character_select = 0
+                
+            char_one_walk = load_sprite_images(spritesheets[character_select], 4, 3)
+            player = char_one_walk[0]
+            player_width = player.get_width() *10
+            player_height = player.get_height() *10
+            player =  py.transform.scale (player, (player_height, player_width))
+
+        screen.blit(player, (413,340))
         
-        
+        if click == True:
+            py.draw.rect(screen, BUTTON_FILL_CLICK, next_char)
+            py.display.flip()
+            py.time.delay(100)
+            click = False
+
+        mouse_button = 0
+
         py.display.flip()
 
     screen.fill(WHITE)
 
-    return
+    return character_select
 
 #clue generation function
 def clues_place (y):
@@ -176,7 +253,6 @@ def clues_place (y):
     clue_number = clue_number + 4
 
     return output_clue, clue_location_horziontal, clue_location_vertical
-
 
 
 def timer (clue):
@@ -436,10 +512,21 @@ def textbox (text):
                 return
 
 doors_list = []
+walk_frame = 4
+walk_slowed = 0
+first_right = False
+first_left = False
+first_top = False
+first_bottom = False
 while running == True:
 
     if START == True:
-        start_menu()
+        character_select = start_menu()
+        #walking frames
+        char_one_walk = load_sprite_images(spritesheets[character_select], 4, 3)
+        player = char_one_walk[0]
+        player_width = player.get_width() *2
+        player_height = player.get_height() *2
         textbox("hint: spacebar to move through textboxes")
         textbox("controls: arrow keys to move")
         textbox("You are trapped in a house, find the key to escape")
@@ -459,6 +546,8 @@ while running == True:
             if e.key == py.K_DOWN: 
                 PRESS_DOWN = True
 
+                
+
         elif e.type == py.KEYUP:
             if e.key == py.K_RIGHT: 
                 PRESS_RIGHT = False
@@ -473,19 +562,45 @@ while running == True:
     previous_x = player_x
     previous_y = player_y
 
-    if PRESS_RIGHT == True: 
+    if PRESS_RIGHT == True:
+        if first_right == True:
+                walk_frame = 2
+        if walk_slowed % 10 == 0:
+            if walk_frame < 12:
+                player = char_one_walk[0 + walk_frame]
+                player =  py.transform.scale (player, (player_height, player_width))
+                walk_frame = walk_frame + 3
+            else: 
+                walk_frame = 2
+        walk_slowed = walk_slowed + 2
         player_x = player_x + move_rate
 
     if PRESS_LEFT == True: 
         player_x = player_x - move_rate
 
     if PRESS_UP == True: 
+        if walk_slowed % 10 == 0:
+            if walk_frame < 12:
+                player = char_one_walk[0 + walk_frame]
+                player =  py.transform.scale (player, (player_height, player_width))
+                walk_frame = walk_frame + 3
+            else: 
+                walk_frame = 1
+        walk_slowed = walk_slowed + 2
         player_y = player_y - move_rate
         
     if PRESS_DOWN == True: 
-        #counter = 0
-        #player = py.image.load(south_walk[counter])
-        #counter = counter + 1
+        first_right = False
+        first_left = False
+        first_top = False
+        if walk_slowed % 10 == 0:
+            if walk_frame < 12:
+                player = char_one_walk[0 + walk_frame]
+                player =  py.transform.scale (player, (player_height, player_width))
+                walk_frame = walk_frame + 3
+            else: 
+                walk_frame = 0
+        walk_slowed = walk_slowed + 2
         player_y = player_y + move_rate
 
     player_rect = py.Rect(player_x, player_y, player_width, player_height)
