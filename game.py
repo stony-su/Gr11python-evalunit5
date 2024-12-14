@@ -4,6 +4,11 @@ Period: 2
 Class Code: ICU3I
 Assignment: Treasure hunting house game
 something I forgot about
+
+Credits:
+https://deepnight.net/tools/rpg-map/
+https://itch.io/game-assets/free/tag-characters/tag-top-down
+https://stock.adobe.com/ca/images/flashlight-icon-pixel-art-isolated-vector-illustration-design-stickers-logo-mobile-app-8-bit-sprite/529950989
 """
 
 #pygame init
@@ -20,13 +25,23 @@ running = True
 #Images
 textbox_image = py.image.load('assets/textbox/textbox.png')
 gui_image = py.image.load('assets/textbox/clues_box.png')
+background = py.image.load('assets/map_game.png')
+win_cond = py.image.load('assets/wincon.jpg')
+
+#Crates
+global crates_rect
+global crates
+crates = py.image.load('assets/crates.png')
+crates_w = crates.get_width()*1.6
+crates_h = crates.get_height()*1.6
+crates = py.transform.scale(crates,(crates_w, crates_h))
 
 # Player Varibles
-player_x = 200*0.45
-player_y = 1100*0.45
+player_x = 300
+player_y = 600
 
 #setup player movement
-move_rate = 5
+move_rate = 20
 
 #Colors
 BLACK = (0,0,0)
@@ -49,7 +64,6 @@ BACKGROUND = (16, 30, 31)
 BUTTON = (254, 173, 65)
 BUTTON_FILL = (104, 56, 46)
 BUTTON_FILL_CLICK = (84, 36, 24)
-
 
 #movement booleans
 global PRESS_RIGHT
@@ -87,10 +101,30 @@ global flash_light
 global flashlight_img
 flash_light = False
 flashlight_img = py.image.load("assets/object_keys/flashlight.png")
-flash_w = flashlight_img.get_width()//10
-flash_h = flashlight_img.get_height()//10
+flash_w = flashlight_img.get_width()//5
+flash_h = flashlight_img.get_height()//5
 flashlight_img =  py.transform.scale (flashlight_img, (flash_w, flash_h))
 
+
+global axe_boolean
+global axe_img
+global crates_boolean
+crates_boolean = True
+axe_boolean = False
+axe = py.image.load("assets/object_keys/axe.png")
+axe_w = axe.get_width()//25
+axe_h = axe.get_height()//25
+axe_img =  py.transform.scale (axe, (axe_w, axe_h))
+
+#Background img setup
+background_w = background.get_width()*1.6
+background_h = background.get_height()*1.6
+background_img = py.transform.scale(background,(background_w, background_h))
+
+dark_bathroom = py.image.load("assets/dark.png")
+dark_background_w = dark_bathroom.get_width()*1.6
+dark_background_h = dark_bathroom.get_height()*1.6
+dark_bathroom_img = py.transform.scale(dark_bathroom,(dark_background_w, dark_background_h))
 #Score
 number_of_clues_found = 0
 score_file = open("score.1  ", "w")
@@ -116,6 +150,32 @@ spritesheets = [
 "assets/spritesheets/9 walk.png",
 "assets/spritesheets/10 walk.png"
 ]
+
+def inv():
+    rect = py.Rect(5, 500, 300, 50)
+    py.draw.rect(screen,LIGHT_GRAY,rect)
+    py.draw.rect(screen,BLACK,rect,10)
+
+    for x in range(1,6):
+        x_multi = x*60
+        py.draw.line(screen,BLACK,(0+x_multi,500),(0 +x_multi,545),10)
+
+    flashlight_img_big = py.image.load("assets/object_keys/flashlight.png")
+    flash_w = flashlight_img_big.get_width()//8
+    flash_h = flashlight_img_big.get_height()//8
+    flashlight_img_big =  py.transform.scale (flashlight_img_big, (flash_w, flash_h))
+    if flash_light == True:
+        screen.blit(flashlight_img_big,(10,505))
+
+    axe_img_big = py.image.load("assets/object_keys/axe.png")
+    axe_w = axe_img_big.get_width()//8
+    axe_h = axe_img_big.get_height()//8
+    axe_img_big =  py.transform.scale (axe_img_big, (axe_w, axe_h))
+
+    if axe_boolean == True:
+        screen.blit(axe_img,(70,505))
+        
+
 
 def load_sprite_images(filename, num_rows, num_cols):
     x_margin = 0
@@ -223,7 +283,6 @@ def start_menu():
             click = False
 
         mouse_button = 0
-
         py.display.flip()
 
     screen.fill(WHITE)
@@ -235,13 +294,12 @@ def clues_place (y):
     global clue_number
 
     rooms = ["Hallway", "Living Room", "Bedroom", "Bathroom", "Kitchen", "Dining Room", "Treasure"]
-    room_numbers = ["first", "second", "third", "fourth", "fifth"  ]
+    room_numbers = ["first", "second", "third", "fourth", "fifth"  , "Placehold"]
 
     next_room = rooms[y+1]
     if next_room == "Treasure":
-        win_condition = "You have found the treasure!"
-        running = False
-        return win_condition
+        win_condition = "Finished"
+        return win_condition, None, None
     room_number = room_numbers[y]
 
     clue_location_horziontal = random.choice(["left", "right"])
@@ -259,7 +317,7 @@ def timer (clue):
     textbox_rect = py.Rect(5, 0, 400, 700)
     screen.blit(gui_image, textbox_rect)
 
-    time = py.time.get_ticks()
+    time = py.time.get_ticks() - init_time
     font = py.font.Font(None, 36)
     font_small = py.font.Font(None, 18)
     text = "Time:  " + str(time/1000) + "s"
@@ -296,21 +354,36 @@ def factor_rect(rect):
     return py.Rect(rect.x * factor + x_move, rect.y * factor - y_move, rect.width * width_factor, rect.height * height_factor)
 
 def flashlight ():
-    global w
-    w = flashlight_img.get_width()//10
-    h = flashlight_img.get_height()//10
+    w = flashlight_img.get_width()//5
+    h = flashlight_img.get_height()//5
     def margin (x):
-        return x - 50
+        return x - 150
     room_list_space = [(random.randint(200,margin(500)),random.randint(200,margin(900))), (random.randint(600,margin(900)),random.randint(400,margin(700))), (random.randint(600,margin(900)),random.randint(800,margin(1300)))]
     xy = random.choice(room_list_space)
     flash_rect = factor_rect(py.Rect(xy[0], xy[1], w+70, h+70))   
     return flash_rect
 
+def axe ():
+    w2 = axe_img.get_width()//25
+    h2 = axe_img.get_height()//25
+
+    def margin (x):
+        return x - 50
+    
+    room_list_space = [(random.randint(200,margin(500)),random.randint(200,margin(900))), (random.randint(600,margin(900)),random.randint(400,margin(700))), (random.randint(600,margin(900)),random.randint(800,margin(1300)))]
+    xy = random.choice(room_list_space)
+    axe_rect = factor_rect(py.Rect(xy[0], xy[1], w2+70, h2+70))   
+    return axe_rect
+
 global flash_rect_global
 flash_rect_global = flashlight()
 
+global axe_rect_global
+axe_rect_global = axe()
+
 def room():
     screen.fill(WHITE)
+    screen.blit(background_img,(0,0))
 
     global walls
     global doors
@@ -321,26 +394,26 @@ def room():
 
     walls = [
         #top wall
-        py.Rect(100, 100, 900, 100),  
+        py.Rect(100, 0, 900, 100),  
 
         #left-most wall
-        py.Rect(100, 200, 100, 800), 
+        py.Rect(0, 100, 100, 800), 
 
         #bottom-left door
-        py.Rect(200, 900, 100, 100), 
-        py.Rect(400, 900, 200, 100), 
+        py.Rect(100, 900, 125, 100), 
+        py.Rect(400, 900, 100, 100), 
 
         #hallway - bathroom wall
-        py.Rect(500, 200, 100, 400), 
+        py.Rect(500, 100, 50, 450), 
 
         #bedroom - dining room wall
-        py.Rect(900, 200, 100, 800), 
+        py.Rect(900, 100, 50, 800), 
 
         #living room - kitchen wall
-        py.Rect(500, 900, 100, 500),  
+        py.Rect(500, 900, 50, 500),  
 
         #bottom-most wall
-        py.Rect(500, 1300, 500, 100),  
+        py.Rect(500, 1300, 500, 50),  
 
         #living room - kitchen wall, right side bottom
         py.Rect(900, 1100, 100, 200), 
@@ -349,77 +422,77 @@ def room():
         py.Rect(900, 1100, 600, 100), 
 
         #bedroom-living room wal
-        py.Rect(500, 700, 600, 100),
+        py.Rect(500, 700, 600, 50),
         
         #bedroom-dinning top wall
-        py.Rect(700, 300, 800, 100),
+        py.Rect(700, 300, 800, 50),
 
         #right-most wall
-        py.Rect(1400, 300, 100, 900),
+        py.Rect(1400, 300, 50, 900),
 
         #kitchen-dining room door
-        py.Rect(1300, 700, 200, 100),
+        py.Rect(1300, 700, 200, 50),
     ]
 
     doors = [
         #hallway
-        py.Rect(300, 900, 100, 100),
+        py.Rect(275, 875, 100, 100),
 
         #hallway - livingroom door
-        py.Rect(500, 800, 100, 100),
+        py.Rect(500, 775, 100, 100),
         
         #hallway - bedroom door
-        py.Rect(500, 600, 100, 100),
+        py.Rect(500, 550, 100, 100),
 
         #bedroom - bathroom door
-        py.Rect(600, 300, 100, 100),
+        py.Rect(500, 200, 100, 100),
 
         #living room - kitchen door
-        py.Rect(900, 1000, 100, 100),
+        py.Rect(900, 975, 100, 100),
 
         #kitchen - dining room door
-        py.Rect(1100, 700, 200, 100)
+        py.Rect(1100, 600, 200, 100)
 
     ]
 
     clues = [
         #order is topleft, top right, bottom left, bottom right
         #hallway
-        py.Rect(200, 200, 100, 100),
-        py.Rect(400, 200, 100, 100),
-        py.Rect(200, 800, 100, 100),
+        py.Rect(100, 100, 100, 100),
+        py.Rect(400, 100, 100, 100),
+        py.Rect(100, 800, 100, 100),
         py.Rect(400, 800, 100, 100),
 
         #living room
-        py.Rect(600, 800, 100, 100),
-        py.Rect(800, 800, 100, 100),
-        py.Rect(600, 1200, 100, 100),
+        py.Rect(550, 750, 100, 100),
+        py.Rect(800, 750, 100, 100),
+        py.Rect(550, 1200, 100, 100),
         py.Rect(800, 1200, 100, 100),
 
         #bedroom
-        py.Rect(600, 400, 100, 100),
-        py.Rect(800, 400, 100, 100),
-        py.Rect(600, 600, 100, 100),
+        py.Rect(500, 300, 100, 100),
+        py.Rect(800, 300, 100, 100),
+        py.Rect(500, 600, 100, 100),
         py.Rect(800, 600, 100, 100),
 
         #bathroom
-        py.Rect(600, 200, 100, 100),
-        py.Rect(800, 200, 100, 100),
-        py.Rect(600, 200, 100, 100),
-        py.Rect(800, 200, 100, 100),
+        py.Rect(550, 100, 100, 100),
+        py.Rect(800, 150, 100, 100),
+        py.Rect(550, 100, 100, 100),
+        py.Rect(800, 150, 100, 100),
 
         #kitchen
-        py.Rect(1000, 800, 100, 100),
-        py.Rect(1300, 800, 100, 100),
-        py.Rect(1000, 1000, 100, 100),
-        py.Rect(1300, 1000, 100, 100),
+        py.Rect(950, 750, 100, 100),
+        py.Rect(1325, 750, 100, 100),
+        py.Rect(950, 1000, 100, 100),
+        py.Rect(1325, 1000, 100, 100),
 
     ]
-
+    """
     for x in walls:
         rect = factor_rect(x)
         py.draw.rect(screen, BLACK, rect)
-
+         
     z = 0
     for rect_num in doors:
         
@@ -430,28 +503,35 @@ def room():
         elif room_remenber_once[z] == False:
             py.draw.rect(screen,GREEN,door)
             z = z + 1
-    
+
     for x in clues:
         clue_rect = factor_rect(x)
         py.draw.rect(screen, YELLOW, clue_rect)
+    """
 
-    for rect in clues:
-        rect_clue = factor_rect(rect)
-        py.draw.rect(screen, YELLOW, rect_clue)
-
-    bathroom_rect = factor_rect(py.Rect(600, 200, 300, 100))
+    bathroom_rect = factor_rect(py.Rect(500, 100, 400, 200))
+        
     if flash_light == False or player_rect.colliderect(bathroom_rect) == False:
-        py.draw.rect(screen, BLACK, bathroom_rect)
+        #py.draw.rect(screen, BLACK, bathroom_rect)
+        screen.blit(dark_bathroom_img,(0,0))
 
     if player_rect.colliderect(bathroom_rect):
-        py.draw.rect(screen, FAINT_YELLOW_1, bathroom_rect)
+        screen.blit(background_img,(0,0))
+    
+    if crates_boolean == True:
+        screen.blit(crates,crates_rect)
 
     if flash_light == False:
         screen.blit (flashlight_img, flash_rect_global)
 
+    if axe_boolean == False:
+        screen.blit (axe_img, axe_rect_global)
+
+
 
     screen.blit(player, player_rect)
     timer(current_clue)
+    inv()
 
     py.display.flip()
 
@@ -518,6 +598,12 @@ first_right = False
 first_left = False
 first_top = False
 first_bottom = False
+
+cretes_w = crates.get_width()
+cretes_h = crates.get_height()
+crates_rect = py.Rect(0,342, cretes_w, cretes_h)
+crates_rect_blockage = factor_rect(py.Rect(920,720, 400,100))
+
 while running == True:
 
     if START == True:
@@ -527,9 +613,12 @@ while running == True:
         player = char_one_walk[0]
         player_width = player.get_width() *2
         player_height = player.get_height() *2
+        player =  py.transform.scale (player, (player_height, player_width))
         textbox("hint: spacebar to move through textboxes")
         textbox("controls: arrow keys to move")
         textbox("You are trapped in a house, find the key to escape")
+        global init_time
+        init_time = py.time.get_ticks()
         START = False
     
     for e in py.event.get():
@@ -546,8 +635,6 @@ while running == True:
             if e.key == py.K_DOWN: 
                 PRESS_DOWN = True
 
-                
-
         elif e.type == py.KEYUP:
             if e.key == py.K_RIGHT: 
                 PRESS_RIGHT = False
@@ -563,8 +650,6 @@ while running == True:
     previous_y = player_y
 
     if PRESS_RIGHT == True:
-        if first_right == True:
-                walk_frame = 2
         if walk_slowed % 10 == 0:
             if walk_frame < 12:
                 player = char_one_walk[0 + walk_frame]
@@ -577,8 +662,6 @@ while running == True:
         player_x = player_x + move_rate
 
     if PRESS_LEFT == True: 
-        if first_left == True:
-            walk_frame = 2
         if walk_slowed % 10 == 0:
             if walk_frame < 12:
                 player = char_one_walk[0 + walk_frame]
@@ -603,9 +686,6 @@ while running == True:
         player_y = player_y - move_rate
         
     if PRESS_DOWN == True: 
-        first_right = False
-        first_left = False
-        first_top = False
         if walk_slowed % 10 == 0:
             if walk_frame < 12:
                 player = char_one_walk[0 + walk_frame]
@@ -634,6 +714,10 @@ while running == True:
     
             #loop changes  
             current_clue, clue_location_horziontal, clue_location_vertical  = clues_place(y) 
+            if current_clue == "Finished":
+                print("You have found the treasure!")
+                running = False
+
             number_of_clues_found = number_of_clues_found + 1
             textbox(current_clue)
 
@@ -699,10 +783,39 @@ while running == True:
             PRESS_LEFT = False
             PRESS_UP = False
             PRESS_DOWN = False
+    
+    if axe_boolean == False:
+        if player_rect.colliderect(axe_rect_global):
+            if keys[py.K_SPACE]:
+                textbox("You found an axe!")
+                axe_boolean = True
+                PRESS_RIGHT = False
+                PRESS_LEFT = False
+                PRESS_UP = False
+                PRESS_DOWN = False
+        
+    if player_rect.colliderect(crates_rect_blockage) and crates_boolean == True:
+        if axe_boolean == True: 
+            textbox("Chop Chop Chop...")
+            crates_boolean = False
+        player_x = previous_x
+        player_y = previous_y       
+        textbox("A pile of crates block your path")
+        PRESS_RIGHT = False
+        PRESS_LEFT = False
+        PRESS_UP = False
+        PRESS_DOWN = False
+
+        
+    
+
+
 
     py.display.flip()
     clock.tick(60)
 
-score = number_of_clues_found - py.time.get_ticks()/1000 
+score = number_of_clues_found - (py.time.get_ticks()-init_time)/1000 
 score_file.write("Score: " + str(score))
 
+while True:
+    screen.blit(win_cond,(0,0))
