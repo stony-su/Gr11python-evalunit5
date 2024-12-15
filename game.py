@@ -152,6 +152,7 @@ spritesheets = [
 "assets/spritesheets/10 walk.png"
 ]
 
+
 def inv():
     rect = py.Rect(5, 500, 300, 50)
     py.draw.rect(screen,LIGHT_GRAY,rect)
@@ -608,6 +609,8 @@ crates_rect_blockage = factor_rect(py.Rect(940,720, 400,100))
 while running == True:
 
     if START == True:
+        chest = 'assets\chest.png'
+        chest_anime = load_sprite_images(chest, 4, 1)
         character_select = start_menu()
         #walking frames
         char_one_walk = load_sprite_images(spritesheets[character_select], 4, 3)
@@ -719,7 +722,7 @@ while running == True:
             if current_clue == "Finished":
                 print("You have found the treasure!")
                 running = False
-                break
+                break  
 
             number_of_clues_found = number_of_clues_found + 1
             textbox(current_clue)
@@ -738,6 +741,7 @@ while running == True:
         elif player_rect.colliderect(door_single) and x not in entered_doors:
             player_x = previous_x
             player_y = previous_y
+            textbox("The door is locked")
             break
     
     if running == False:
