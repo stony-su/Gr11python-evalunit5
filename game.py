@@ -27,6 +27,7 @@ textbox_image = py.image.load('assets/textbox/textbox.png')
 gui_image = py.image.load('assets/textbox/clues_box.png')
 background = py.image.load('assets/map_game.png')
 win_cond = py.image.load('assets/wincon.jpg')
+win_cond = py.transform.scale(win_cond, (1000, 700))
 
 #Crates
 global crates_rect
@@ -78,7 +79,7 @@ START = True
 
 #room booleans (for loops)
 global room_remenber_once
-room_remenber_once = [True, True, True, True, True, True]
+room_remenber_once = [True, True, True, True, True, True, True]
 y = 0
 entered_doors = []
 
@@ -298,7 +299,7 @@ def clues_place (y):
 
     next_room = rooms[y+1]
     if next_room == "Treasure":
-        win_condition = "Finished"
+        win_condition = "You have Found the Treasure!"
         return win_condition, None, None
     room_number = room_numbers[y]
 
@@ -602,7 +603,7 @@ first_bottom = False
 cretes_w = crates.get_width()
 cretes_h = crates.get_height()
 crates_rect = py.Rect(0,342, cretes_w, cretes_h)
-crates_rect_blockage = factor_rect(py.Rect(920,720, 400,100))
+crates_rect_blockage = factor_rect(py.Rect(940,720, 400,100))
 
 while running == True:
 
@@ -708,6 +709,7 @@ while running == True:
     for x in doors:
         door_single = factor_rect(x)
         doors_list.append(factor_rect(x))
+        print(y)
         
         if room_remenber_once[y] == True and player_rect.colliderect(doors_list[y]) and clue_found == True:
             room_remenber_once[y] = False   
@@ -798,6 +800,8 @@ while running == True:
         if axe_boolean == True: 
             textbox("Chop Chop Chop...")
             crates_boolean = False
+            break
+
         player_x = previous_x
         player_y = previous_y       
         textbox("A pile of crates block your path")
@@ -819,3 +823,4 @@ score_file.write("Score: " + str(score))
 
 while True:
     screen.blit(win_cond,(0,0))
+    py.display.flip()
