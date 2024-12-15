@@ -8,7 +8,7 @@ screen = py.display.set_mode((800, 600))
 py.display.set_caption('Walking Animation')
 
 # Walking Animation
-one_img = 'assets/spritesheets/1 walk.png'
+one_img = 'Fantasy RPG (Toony) 32x32.png'
 
 def load_sprite_images(filename, num_rows, num_cols):
     x_margin = 0
@@ -43,7 +43,7 @@ def load_sprite_images(filename, num_rows, num_cols):
     return grid_images
 
 # Walking frames
-char_one_walk = load_sprite_images(one_img, 4, 3)
+char_one_walk = load_sprite_images(one_img, 8, 11)
 x = 0  # Initial x position for drawing on the screen
 y = 0  # Initial y position
 clock = py.time.Clock()

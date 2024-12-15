@@ -478,8 +478,8 @@ def room():
 
         #bathroom
         py.Rect(550, 100, 100, 100),
-        py.Rect(800, 150, 100, 100),
-        py.Rect(550, 100, 100, 100),
+        py.Rect(800, 100, 100, 100),
+        py.Rect(550, 150, 100, 100),
         py.Rect(800, 150, 100, 100),
 
         #kitchen
@@ -647,6 +647,7 @@ while running == True:
                 PRESS_DOWN = False
     
     room()
+    print(running)
     previous_x = player_x
     previous_y = player_y
 
@@ -709,7 +710,6 @@ while running == True:
     for x in doors:
         door_single = factor_rect(x)
         doors_list.append(factor_rect(x))
-        print(y)
         
         if room_remenber_once[y] == True and player_rect.colliderect(doors_list[y]) and clue_found == True:
             room_remenber_once[y] = False   
@@ -719,6 +719,7 @@ while running == True:
             if current_clue == "Finished":
                 print("You have found the treasure!")
                 running = False
+                break
 
             number_of_clues_found = number_of_clues_found + 1
             textbox(current_clue)
@@ -738,7 +739,10 @@ while running == True:
             player_x = previous_x
             player_y = previous_y
             break
-        
+    
+    if running == False:
+        break
+
     if clue_found == False:
 
         if clue_location_horziontal == "left" and clue_location_vertical == "top":
@@ -800,15 +804,15 @@ while running == True:
         if axe_boolean == True: 
             textbox("Chop Chop Chop...")
             crates_boolean = False
-            break
 
-        player_x = previous_x
-        player_y = previous_y       
-        textbox("A pile of crates block your path")
-        PRESS_RIGHT = False
-        PRESS_LEFT = False
-        PRESS_UP = False
-        PRESS_DOWN = False
+        if crates_boolean == True:
+            player_x = previous_x
+            player_y = previous_y       
+            textbox("A pile of crates block your path")
+            PRESS_RIGHT = False
+            PRESS_LEFT = False
+            PRESS_UP = False
+            PRESS_DOWN = False
 
         
     
@@ -823,4 +827,7 @@ score_file.write("Score: " + str(score))
 
 while True:
     screen.blit(win_cond,(0,0))
+    new_roman = py.font.SysFont("Times New Roman", 50)
+    button_text = new_roman.render(score, True, WHITE)
+    screen.blit(button_text, (460, 225))
     py.display.flip()
