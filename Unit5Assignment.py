@@ -1,6 +1,7 @@
 """
 Name: Darren Su
 Period: 2
+Date: Dec 14th
 Class Code: ICU3I
 Assignment: Treasure hunting house game
 something I forgot about
@@ -11,7 +12,7 @@ https://itch.io/game-assets/free/tag-characters/tag-top-down
 https://stock.adobe.com/ca/images/flashlight-icon-pixel-art-isolated-vector-illustration-design-stickers-logo-mobile-app-8-bit-sprite/529950989
 """
 
-#pygame init
+#import packages
 import pygame as py
 import os
 import random
@@ -23,13 +24,17 @@ global running
 running = True
 
 #Images
+global sign_img
 textbox_image = py.image.load('assets/textbox/textbox.png')
 gui_image = py.image.load('assets/textbox/clues_box.png')
 background = py.image.load('assets/map_game.png')
 win_cond = py.image.load('assets/wincon.jpg')
 win_cond = py.transform.scale(win_cond, (1000, 700))
+sign_img1= py.image.load("assets/object_keys/sign1.png")
+sign_img2 = py.image.load("assets/object_keys/sign2.png")
+sign_img = random.choice([sign_img1, sign_img2])    
 
-#Crates
+#set up crate image (make global for functions to use)
 global crates_rect
 global crates
 crates = py.image.load('assets/crates.png')
@@ -37,12 +42,12 @@ crates_w = crates.get_width()*1.6
 crates_h = crates.get_height()*1.6
 crates = py.transform.scale(crates,(crates_w, crates_h))
 
-# Player Varibles
+# Player starting location
 player_x = 300
 player_y = 600
 
 #setup player movement
-move_rate = 20
+move_rate = 5
 
 #Colors
 BLACK = (0,0,0)
@@ -60,7 +65,7 @@ LIGHT_GRAY = (211, 211, 211)
 PURPLE = (211,144,240)
 
 
-#start menu colors
+#Start menu colors
 BACKGROUND = (16, 30, 31)
 BUTTON = (254, 173, 65)
 BUTTON_FILL = (104, 56, 46)
@@ -83,12 +88,13 @@ room_remenber_once = [True, True, True, True, True, True, True]
 y = 0
 entered_doors = []
 
-#clue variables
+#Clue variables
 global clue_found
 global clue_rect
 global clue_number 
 global clue_menu
 global current_clue
+global current_clue_new
 clue_found = True 
 clue_number = 0
 clue_rect = None
@@ -96,8 +102,9 @@ clue_location_horziontal = "right"
 clue_location_vertical = "top"
 clue_menu = []
 current_clue = None
+current_clue_new = None
 
-#Objects
+#Flashlight and axe variables
 global flash_light
 global flashlight_img
 flash_light = False
@@ -126,6 +133,7 @@ dark_bathroom = py.image.load("assets/dark.png")
 dark_background_w = dark_bathroom.get_width()*1.6
 dark_background_h = dark_bathroom.get_height()*1.6
 dark_bathroom_img = py.transform.scale(dark_bathroom,(dark_background_w, dark_background_h))
+
 #Score
 number_of_clues_found = 0
 score_file = open("score.1  ", "w")
@@ -134,7 +142,7 @@ score_file.write("Clues: " + "\n")
 #Time Track
 clock = py.time.Clock()
 
-#screen 
+#Pygame Screen 
 screen = py.display.set_mode((1000, 700))
 screen.fill(WHITE)
 
@@ -152,16 +160,18 @@ spritesheets = [
 "assets/spritesheets/10 walk.png"
 ]
 
-
+#inventory for your items
 def inv():
     rect = py.Rect(5, 500, 300, 50)
     py.draw.rect(screen,LIGHT_GRAY,rect)
     py.draw.rect(screen,BLACK,rect,10)
 
+    #create rectangle item holder boxes
     for x in range(1,6):
         x_multi = x*60
         py.draw.line(screen,BLACK,(0+x_multi,500),(0 +x_multi,545),10)
 
+    #draw the items if found
     flashlight_img_big = py.image.load("assets/object_keys/flashlight.png")
     flash_w = flashlight_img_big.get_width()//8
     flash_h = flashlight_img_big.get_height()//8
@@ -177,8 +187,7 @@ def inv():
     if axe_boolean == True:
         screen.blit(axe_img,(70,505))
         
-
-
+#Sprite Sheet Function - I copy and pasted this from the internet and modified it into a function with your presmission
 def load_sprite_images(filename, num_rows, num_cols):
     x_margin = 0
     x_padding = 0
@@ -212,8 +221,9 @@ def load_sprite_images(filename, num_rows, num_cols):
     
     return grid_images
 
-#Button Function
+#Start menu function - Allows you to swap characters and start the game
 def start_menu():
+    #start menu variables
     start_menu_boolean = True
     mx = 0
     my = 0 
@@ -232,20 +242,27 @@ def start_menu():
     player =  py.transform.scale (player, (player_height, player_width))
     click = False
 
+    #while loop for start menu
     while start_menu_boolean == True:
+        
+        #always check for mouse location for button clicks
         for e in py.event.get():
             mouse_y_scroll = py.mouse.get_pos()[1]
             mouse_x_scroll = py.mouse.get_pos()[0]
             if e.type == py.MOUSEBUTTONDOWN:
                 mx, my = e.pos
                 mouse_button = e.button
-                
+        
+        #draw buttons
         screen.fill(BACKGROUND)
         py.draw.rect(screen, BUTTON_FILL, rectangle)
         py.draw.rect(screen, BUTTON, rectangle, 5)
         py.draw.rect(screen,BUTTON_FILL, next_char)
 
+        #if button collides do x action
         if rectangle.collidepoint(mx, my) and mouse_button == 1:
+
+            #changes the button to a different color for a click effect
             py.draw.rect(screen, BUTTON_FILL_CLICK, rectangle)
             py.display.flip()
             py.time.delay(100)
@@ -255,7 +272,8 @@ def start_menu():
         screen.blit(button_text, (460, 225))
         char_text = new_roman_small.render("next character", True, BUTTON)
         screen.blit(char_text, (415, 570))
-
+        
+        #adds triangles so user can see that the button is selected
         if 300 > mouse_y_scroll > 200:
             py.draw.polygon(screen, BUTTON, [(375, 250), (330, 225), (330, 275)])
 
@@ -269,15 +287,18 @@ def start_menu():
             click = True
             if character_select > 9:
                 character_select = 0
-                
+            
+            #picks character from spreadsheet and then scales it
             char_one_walk = load_sprite_images(spritesheets[character_select], 4, 3)
             player = char_one_walk[0]
             player_width = player.get_width() *10
             player_height = player.get_height() *10
             player =  py.transform.scale (player, (player_height, player_width))
 
+        #draws new character
         screen.blit(player, (413,340))
         
+        #click effect
         if click == True:
             py.draw.rect(screen, BUTTON_FILL_CLICK, next_char)
             py.display.flip()
@@ -295,30 +316,33 @@ def start_menu():
 def clues_place (y):
     global clue_number
 
+    #rooms and room numbers
     rooms = ["Hallway", "Living Room", "Bedroom", "Bathroom", "Kitchen", "Dining Room", "Treasure"]
     room_numbers = ["first", "second", "third", "fourth", "fifth"  , "Placehold"]
 
     next_room = rooms[y+1]
-    if next_room == "Treasure":
-        win_condition = "You have Found the Treasure!"
-        return win_condition, None, None
+
     room_number = room_numbers[y]
 
+    #randomly generate the location of the clue
     clue_location_horziontal = random.choice(["left", "right"])
     clue_location_vertical = random.choice(["top", "bottom"])
     
+    #output the clue onto the screen using timer function
     output_clue = "The %s key to the %s is in the %s %s corner of the %s" %(room_number, next_room, clue_location_vertical, clue_location_horziontal, rooms[y])
 
-    #clue variables
+    #clue variables, add four because there are 4 potienal clues for each room, and this switches to the next room
     clue_number = clue_number + 4
 
     return output_clue, clue_location_horziontal, clue_location_vertical
 
-
+#the clue + timer function
 def timer (clue):
+    #draws pixel art box for menu
     textbox_rect = py.Rect(5, 0, 400, 700)
     screen.blit(gui_image, textbox_rect)
 
+    #draws the time
     time = py.time.get_ticks() - init_time
     font = py.font.Font(None, 36)
     font_small = py.font.Font(None, 18)
@@ -326,11 +350,14 @@ def timer (clue):
     text_surface = font.render(text, True, GREY)
     screen.blit(text_surface, (40, 30))
 
+    #draws the clue if not found yet
     if clue not in clue_menu and clue != None:
         clue_menu.append(clue)
         score_file.write(clue + "\n")
     
     y_menu_move = 0
+
+    #makes the sentence cut off then it reaches the end of the box
     if clue != None:
         for n in range(len(clue_menu)):
             clue_rect_one = py.Rect(30, 75 + y_menu_move, 400, 700)
@@ -344,7 +371,7 @@ def timer (clue):
 
             y_menu_move = y_menu_move + 75
 
-
+#I drew the map with 100 x 100 boxes, but since the map is 1000 x 700, I need to scale it down to fit the all the tiles
 def factor_rect(rect):
     factor = 0.50
     width_factor = 0.5
@@ -352,9 +379,39 @@ def factor_rect(rect):
     x_move = 225
     y_move = 25
 
-    #this scales the walls, as well as centers it
+    #also centers it according to my needs, I got your premission to use rect.x, rect.y, etc
     return py.Rect(rect.x * factor + x_move, rect.y * factor - y_move, rect.width * width_factor, rect.height * height_factor)
 
+#the sign must be scale and centered futher, because each sign location is different, so I made a new function
+def sign_factor(rect):
+    width_factor = 4
+    height_factor = 4
+    x_move = 12
+    y_move = 25
+
+    return py.Rect(rect.x + x_move, rect.y + y_move, rect.width * width_factor, rect.height * height_factor)
+
+#sign generation function
+def sign (): 
+    sign_rect = []
+    w = sign_img.get_width()//5
+    h = sign_img.get_height()//5
+
+    def margin (x):
+        return x - 150
+    
+    #randomly generate the location of the sign within each room
+    room_list_space_clues = [(random.randint(200,margin(500)),random.randint(200,margin(900))), (random.randint(600,margin(900)),random.randint(400,margin(700))), (random.randint(600,margin(900)),random.randint(800,margin(1300))), (random.randint(600,margin(900)),random.randint(150,200)), (random.randint(1000,margin(1400)),random.randint(700,margin(1000)))]
+
+    x = 0
+
+    for x in range(len(room_list_space_clues)):
+        xy = room_list_space_clues[x] 
+        sign_rect.append(py.Rect(xy[0], xy[1], w, h  ))
+
+    return sign_rect
+
+#randomly places the flashlight and axe in random locations, I got your premission to use coordinate tuples (xy[0], xy[1])
 def flashlight ():
     w = flashlight_img.get_width()//5
     h = flashlight_img.get_height()//5
@@ -377,12 +434,16 @@ def axe ():
     axe_rect = factor_rect(py.Rect(xy[0], xy[1], w2+70, h2+70))   
     return axe_rect
 
+#sets up the variables
 global flash_rect_global
 flash_rect_global = flashlight()
 
 global axe_rect_global
 axe_rect_global = axe()
+ 
+sign_rect = sign()
 
+#room draw function - draws the entire game
 def room():
     screen.fill(WHITE)
     screen.blit(background_img,(0,0))
@@ -392,8 +453,10 @@ def room():
     global clues
     global player_rect
 
+    #player hitbox
     player_rect = py.Rect(player_x, player_y, player_width, player_height)
 
+    #list of all walls
     walls = [
         #top wall
         py.Rect(100, 0, 900, 100),  
@@ -436,6 +499,7 @@ def room():
         py.Rect(1300, 700, 200, 50),
     ]
 
+    #door locations
     doors = [
         #hallway
         py.Rect(275, 875, 100, 100),
@@ -447,7 +511,7 @@ def room():
         py.Rect(500, 550, 100, 100),
 
         #bedroom - bathroom door
-        py.Rect(500, 200, 100, 100),
+        py.Rect(570, 200, 100, 100),
 
         #living room - kitchen door
         py.Rect(900, 975, 100, 100),
@@ -457,6 +521,7 @@ def room():
 
     ]
 
+    #clue locations
     clues = [
         #order is topleft, top right, bottom left, bottom right
         #hallway
@@ -490,33 +555,15 @@ def room():
         py.Rect(1325, 1000, 100, 100),
 
     ]
-    """
-    for x in walls:
-        rect = factor_rect(x)
-        py.draw.rect(screen, BLACK, rect)
-         
-    z = 0
-    for rect_num in doors:
-        
-        door = factor_rect(rect_num)
 
-        if room_remenber_once[z] == True:
-            py.draw.rect(screen,RED,door)
-        elif room_remenber_once[z] == False:
-            py.draw.rect(screen,GREEN,door)
-            z = z + 1
-
-    for x in clues:
-        clue_rect = factor_rect(x)
-        py.draw.rect(screen, YELLOW, clue_rect)
-    """
-
+    #if the player picks up an item, the item will disappear
     bathroom_rect = factor_rect(py.Rect(500, 100, 400, 200))
         
     if flash_light == False or player_rect.colliderect(bathroom_rect) == False:
         #py.draw.rect(screen, BLACK, bathroom_rect)
         screen.blit(dark_bathroom_img,(0,0))
 
+    #if the player has the flashlight, the bathroom will be lit up
     if player_rect.colliderect(bathroom_rect):
         screen.blit(background_img,(0,0))
     
@@ -528,15 +575,24 @@ def room():
 
     if axe_boolean == False:
         screen.blit (axe_img, axe_rect_global)
+    
+    #for all randomly randomly generated signs in the list, draw them
+    for x in sign_rect:
+        rect = factor_rect(x)
+        screen.blit(sign_img, rect)
 
-
+    if chest_boolean == False:
+        chest = chest_anime[0]
+        chest =  py.transform.scale (chest, (60, 60))
+        screen.blit(chest, chest_rect)
 
     screen.blit(player, player_rect)
-    timer(current_clue)
+    timer(current_clue_new)
     inv()
 
     py.display.flip()
 
+#textbox function allowing me to tell the player what to do and clues
 def textbox (text):
     text = str(text)
     textbox_rect = py.Rect(150, 400, 500, 100)
@@ -547,6 +603,7 @@ def textbox (text):
     x = 0
     x_spacing = 0
 
+    #if the text is bigger than the textbox, it will cut off and continue on the next line
     while x < len(text):
         if x > 50:
             new_line = text[x:]
@@ -557,42 +614,18 @@ def textbox (text):
         screen.blit(text_surface, (200+ x_spacing, 500))
 
         py.display.flip()
-        py.time.delay(50)
+        py.time.delay(20)
 
         x_spacing = x_spacing + text_surface.get_width()
         x = x + 1
 
-        """
-        if len(text) > 50:
-            for e in py.event.get():
-                if e.type == py.KEYDOWN:
-                    half_length_text = len(text)//2
-                    existing_text = text [0:half_length_text]
-                    
-                    screen.blit(textbox_image, textbox_rect)
-                    text_surface = font.render(existing_text, True, GREY)
-                    screen.blit(text_surface, (200, 500))
-                    py.display.flip()
-                    new_line = text[half_length_text:]
-                    textbox(new_line)
-
-                    break
-        else:
-        """
-        #remove if bug not resolved
-        for e in py.event.get():
-            if e.type == py.KEYDOWN:
-                screen.blit(textbox_image, textbox_rect)
-                text_surface = font.render(text, True, GREY)
-                screen.blit(text_surface, (200, 500))
-                x = len(text)
-                py.display.flip()
 
     while True:
         for e in py.event.get():
             if e.type == py.KEYDOWN:
                 return
 
+#more variables setup
 doors_list = []
 walk_frame = 4
 walk_slowed = 0
@@ -606,25 +639,44 @@ cretes_h = crates.get_height()
 crates_rect = py.Rect(0,342, cretes_w, cretes_h)
 crates_rect_blockage = factor_rect(py.Rect(940,720, 400,100))
 
+#main game loop
 while running == True:
-
+    
+    #at the start, init a bunch of things
     if START == True:
-        chest = 'assets\chest.png'
+        #this inits the chest 
+
+        current_direction = "DOWN"
+
+        global chest_anime
+        global chest_rect
+        global chest_boolean
+        chest_boolean = False
+        chest = 'assets/chest.png'
         chest_anime = load_sprite_images(chest, 4, 1)
+        chest_rect = factor_rect(py.Rect(1125, 400, 60, 60))
         character_select = start_menu()
-        #walking frames
+
+        #inits walking frames for selected charater
         char_one_walk = load_sprite_images(spritesheets[character_select], 4, 3)
         player = char_one_walk[0]
         player_width = player.get_width() *2
         player_height = player.get_height() *2
         player =  py.transform.scale (player, (player_height, player_width))
+
+        #gives the player hints and controls
         textbox("hint: spacebar to move through textboxes")
         textbox("controls: arrow keys to move")
-        textbox("You are trapped in a house, find the key to escape")
+        textbox("There is a chest in the house, find it to win")
+        textbox("Pick up items and destory crates using space")
+        textbox("Your final score will be based off")
+        textbox("the total amount of clues you used")
+        textbox("and the time it took you to find the chest")
         global init_time
         init_time = py.time.get_ticks()
         START = False
     
+    #controls loop
     for e in py.event.get():
         if e.type == py.QUIT:
             running = False
@@ -648,12 +700,14 @@ while running == True:
                 PRESS_UP = False
             if e.key == py.K_DOWN: 
                 PRESS_DOWN = False
-    
+    #draws the screen
     room()
-    print(running)
+
+    #sets up the previous x and y for the player
     previous_x = player_x
     previous_y = player_y
 
+    #if player moves, change the player sprite animation
     if PRESS_RIGHT == True:
         if walk_slowed % 10 == 0:
             if walk_frame < 12:
@@ -720,12 +774,10 @@ while running == True:
             #loop changes  
             current_clue, clue_location_horziontal, clue_location_vertical  = clues_place(y) 
             if current_clue == "Finished":
-                print("You have found the treasure!")
                 running = False
                 break  
 
             number_of_clues_found = number_of_clues_found + 1
-            textbox(current_clue)
 
             #loop changes  
             clue_found = False
@@ -742,7 +794,24 @@ while running == True:
             player_x = previous_x
             player_y = previous_y
             textbox("The door is locked")
+            PRESS_RIGHT = False
+            PRESS_LEFT = False
+            PRESS_UP = False
+            PRESS_DOWN = False
+            
             break
+
+    for x in sign_rect:
+        sign_rect_single = sign_factor(factor_rect(x))
+        if player_rect.colliderect(sign_rect_single):
+            player_x = previous_x
+            player_y = previous_y
+            textbox(current_clue)
+            current_clue_new = current_clue
+            PRESS_RIGHT = False
+            PRESS_LEFT = False
+            PRESS_UP = False
+            PRESS_DOWN = False
     
     if running == False:
         break
@@ -818,20 +887,21 @@ while running == True:
             PRESS_UP = False
             PRESS_DOWN = False
 
+    if player_rect.colliderect(chest_rect):
         
-    
-
-
+        textbox("You found the treasure!")
+        break
 
     py.display.flip()
     clock.tick(60)
 
-score = number_of_clues_found - (py.time.get_ticks()-init_time)/1000 
-score_file.write("Score: " + str(score))
+score = 10*number_of_clues_found - (py.time.get_ticks()-init_time)/1000
+score_text = str(int(score))
+score_file.write("Score: " + score_text)
 
 while True:
     screen.blit(win_cond,(0,0))
     new_roman = py.font.SysFont("Times New Roman", 50)
-    button_text = new_roman.render(score, True, WHITE)
-    screen.blit(button_text, (460, 225))
+    win_text = new_roman.render("Score:"+score_text, True, WHITE)
+    screen.blit(win_text, (350, 500))
     py.display.flip()
