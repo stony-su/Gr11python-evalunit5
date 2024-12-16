@@ -627,7 +627,10 @@ def textbox (text):
 
 #more variables setup
 doors_list = []
-walk_frame = 4
+walk_frame_1 = 2
+walk_frame_2 = 2
+walk_frame_3 = 1
+walk_frame_4 = 0
 walk_slowed = 0
 first_right = False
 first_left = False
@@ -710,48 +713,48 @@ while running == True:
     #if player moves, change the player sprite animation
     if PRESS_RIGHT == True:
         if walk_slowed % 10 == 0:
-            if walk_frame < 12:
-                player = char_one_walk[0 + walk_frame]
+            if walk_frame_1 < 12:
+                player = char_one_walk[0 + walk_frame_1]
                 player =  py.transform.scale (player, (player_height, player_width))
-                walk_frame = walk_frame + 3
+                walk_frame_1 = walk_frame_1 + 3
             else: 
-                walk_frame = 2
+                walk_frame_1 = 2
 
         walk_slowed = walk_slowed + 2
         player_x = player_x + move_rate
 
     if PRESS_LEFT == True: 
         if walk_slowed % 10 == 0:
-            if walk_frame < 12:
-                player = char_one_walk[0 + walk_frame]
+            if walk_frame_2 < 12:
+                player = char_one_walk[0 + walk_frame_2]
                 player =  py.transform.scale (player, (player_height, player_width))
                 player = py.transform.flip(player, True, False)
-                walk_frame = walk_frame + 3
+                walk_frame_2 = walk_frame_2 + 3
             else: 
-                walk_frame = 2
+                walk_frame_2 = 2
 
         walk_slowed = walk_slowed + 2
         player_x = player_x - move_rate
 
     if PRESS_UP == True: 
         if walk_slowed % 10 == 0:
-            if walk_frame < 12:
-                player = char_one_walk[0 + walk_frame]
+            if walk_frame_3 < 12:
+                player = char_one_walk[0 + walk_frame_3]
                 player =  py.transform.scale (player, (player_height, player_width))
-                walk_frame = walk_frame + 3
+                walk_frame_3 = walk_frame_3 + 3
             else: 
-                walk_frame = 1
+                walk_frame_3 = 1
         walk_slowed = walk_slowed + 2
         player_y = player_y - move_rate
         
     if PRESS_DOWN == True: 
         if walk_slowed % 10 == 0:
-            if walk_frame < 12:
-                player = char_one_walk[0 + walk_frame]
+            if walk_frame_4 < 12:
+                player = char_one_walk[0 + walk_frame_4]
                 player =  py.transform.scale (player, (player_height, player_width))
-                walk_frame = walk_frame + 3
+                walk_frame_4 = walk_frame_4 + 3
             else: 
-                walk_frame = 0
+                walk_frame_4 = 0
         walk_slowed = walk_slowed + 2
         player_y = player_y + move_rate
 
