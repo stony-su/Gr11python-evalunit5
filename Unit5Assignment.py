@@ -4,7 +4,7 @@ Period: 2
 Date: Dec 14th
 Class Code: ICU3I
 Assignment: Treasure hunting house game
-something I forgot about
+Discription: You have to find clues, keys, and items to reacht he treasure, with many randomly generated objects in the game
 
 Credits:
 https://deepnight.net/tools/rpg-map/
@@ -135,8 +135,10 @@ dark_background_h = dark_bathroom.get_height()*1.6
 dark_bathroom_img = py.transform.scale(dark_bathroom,(dark_background_w, dark_background_h))
 
 #Score
+global number_of_clues_found
 number_of_clues_found = 0
-score_file = open("score.1  ", "w")
+
+score_file = open("score.txt  ", "w")
 score_file.write("Clues: " + "\n")
 
 #Time Track
@@ -335,41 +337,7 @@ def clues_place (y):
     clue_number = clue_number + 4
 
     return output_clue, clue_location_horziontal, clue_location_vertical
-
-#the clue + timer function
-def timer (clue):
-    #draws pixel art box for menu
-    textbox_rect = py.Rect(5, 0, 400, 700)
-    screen.blit(gui_image, textbox_rect)
-
-    #draws the time
-    time = py.time.get_ticks() - init_time
-    font = py.font.Font(None, 36)
-    font_small = py.font.Font(None, 18)
-    text = "Time:  " + str(time/1000) + "s"
-    text_surface = font.render(text, True, GREY)
-    screen.blit(text_surface, (40, 30))
-
-    #draws the clue if not found yet
-    if clue not in clue_menu and clue != None:
-        clue_menu.append(clue)
-        score_file.write(clue + "\n")
-    
-    y_menu_move = 0
-
-    #makes the sentence cut off then it reaches the end of the box
-    if clue != None:
-        for n in range(len(clue_menu)):
-            clue_rect_one = py.Rect(30, 75 + y_menu_move, 400, 700)
-            clue_surface_one_half = font_small.render(str(clue_menu[n])[:(len(str(clue_menu[n]))//2)], True, GREY)
-        
-            clue_rect_two = py.Rect(25, 100 + y_menu_move, 400, 700)
-            clue_surface_two_half = font_small.render(str(clue_menu[n])[(len(str(clue_menu[n]))//2):], True, GREY)
-
-            screen.blit(clue_surface_one_half, clue_rect_one)
-            screen.blit(clue_surface_two_half, clue_rect_two)
-
-            y_menu_move = y_menu_move + 75
+((200, 500), (200, 900)), ((600, 900), (400, 700)), ((600, 900), (800, 1300)), ((600, 900), (150, 200)), ((1000, 1400), (700, 1000))
 
 #I drew the map with 100 x 100 boxes, but since the map is 1000 x 700, I need to scale it down to fit the all the tiles
 def factor_rect(rect):
@@ -433,6 +401,48 @@ def axe ():
     xy = random.choice(room_list_space)
     axe_rect = factor_rect(py.Rect(xy[0], xy[1], w2+70, h2+70))   
     return axe_rect
+
+#the clue + timer function
+def timer (clue, current_room,number_of_clues):
+        
+    #draws pixel art box for menu
+    textbox_rect = py.Rect(5, 0, 400, 700)
+    screen.blit(gui_image, textbox_rect)
+
+    #draws the time
+    time = py.time.get_ticks() - init_time
+    font = py.font.Font(None, 36)
+    font_small = py.font.Font(None, 18)
+    text = "Time:  " + str(time/1000) + "s"
+    text_surface = font.render(text, True, GREY)
+    screen.blit(text_surface, (40, 30))
+
+    text_surface_room = font.render(current_room, True, GREY)
+    screen.blit(text_surface_room, (40,75))
+
+    text_surface_clues = font.render("# of Clues:" + str(number_of_clues), True, GREY)
+    screen.blit(text_surface_clues, (40,100))
+
+    #adds clue to file if not found yet
+    if clue not in clue_menu and clue != None:
+        clue_menu.append(clue)
+        score_file.write(clue + "\n")
+    
+    y_menu_move = 0
+
+    #draws the clue on the big menu textbox
+    if clue != None:
+        for n in range(len(clue_menu)):
+            clue_rect_one = py.Rect(30, 150 + y_menu_move, 400, 700)
+            clue_surface_one_half = font_small.render(str(clue_menu[n])[:(len(str(clue_menu[n]))//2)], True, GREY)
+        
+            clue_rect_two = py.Rect(25, 175  + y_menu_move, 400, 700)
+            clue_surface_two_half = font_small.render(str(clue_menu[n])[(len(str(clue_menu[n]))//2):], True, GREY)
+
+            screen.blit(clue_surface_one_half, clue_rect_one)
+            screen.blit(clue_surface_two_half, clue_rect_two)
+
+            y_menu_move = y_menu_move + 75
 
 #sets up the variables
 global flash_rect_global
@@ -554,13 +564,18 @@ def room():
         py.Rect(950, 1000, 100, 100),
         py.Rect(1325, 1000, 100, 100),
 
+        #placeholders to remove error
+        py.Rect(100, 100, 100, 100),
+        py.Rect(100, 100, 100, 100),
+        py.Rect(100, 100, 100, 100),
+        py.Rect(100, 100, 100, 100)
+
     ]
 
     #if the player picks up an item, the item will disappear
     bathroom_rect = factor_rect(py.Rect(500, 100, 400, 200))
         
     if flash_light == False or player_rect.colliderect(bathroom_rect) == False:
-        #py.draw.rect(screen, BLACK, bathroom_rect)
         screen.blit(dark_bathroom_img,(0,0))
 
     #if the player has the flashlight, the bathroom will be lit up
@@ -587,7 +602,38 @@ def room():
         screen.blit(chest, chest_rect)
 
     screen.blit(player, player_rect)
-    timer(current_clue_new)
+    
+    hallway = factor_rect(py.Rect(100,100,400,800))
+    bedroom = factor_rect( py.Rect(500,300,400,400))
+    living = factor_rect(py.Rect(500,700,400,600))
+    bathroom = factor_rect(py.Rect(500,100,400,150))
+    kitchen = factor_rect(py.Rect(900,700,500,400)) 
+    dining = factor_rect(py.Rect(900,300,500,400))
+
+    current_room = "None"
+
+    if player_rect.colliderect(hallway):
+        current_room = "Hallway"
+
+    elif player_rect.colliderect(bedroom): 
+        current_room = "Bedroom"
+
+    elif player_rect.colliderect(living):
+        current_room = "Living Room"
+
+    elif player_rect.colliderect(bathroom):
+        current_room = "Bathroom"
+
+    elif player_rect.colliderect(kitchen):
+        current_room = "Kitchen"
+
+    elif player_rect.colliderect(dining):
+        current_room = "Dining Room"
+        
+    else:
+        current_room = "None"
+    
+    timer(current_clue_new, current_room, number_of_clues_found )
     inv()
 
     py.display.flip()
@@ -710,7 +756,7 @@ while running == True:
     previous_x = player_x
     previous_y = player_y
 
-    #if player moves, change the player sprite animation
+    #if player moves, change the player sprite animation, and scale up character 
     if PRESS_RIGHT == True:
         if walk_slowed % 10 == 0:
             if walk_frame_1 < 12:
@@ -759,14 +805,16 @@ while running == True:
         player_y = player_y + move_rate
 
     player_rect = py.Rect(player_x, player_y, player_width, player_height)
-                    
+
+    #if hit walls go back to previous location
     for x in walls:
         rect = factor_rect(x)
         if player_rect.colliderect(rect):
             player_x = previous_x
             player_y = previous_y
             break
-
+    
+    #when entering a door generate a clue location, and wait untill player reads sign (the pixel art object) to show it
     for x in doors:
         door_single = factor_rect(x)
         doors_list.append(factor_rect(x))
@@ -792,7 +840,7 @@ while running == True:
             PRESS_UP = False
             PRESS_DOWN = False
 
-
+        #otherwise go back to previous location 
         elif player_rect.colliderect(door_single) and x not in entered_doors:
             player_x = previous_x
             player_y = previous_y
@@ -801,9 +849,9 @@ while running == True:
             PRESS_LEFT = False
             PRESS_UP = False
             PRESS_DOWN = False
-            
             break
 
+    #show clue when hit
     for x in sign_rect:
         sign_rect_single = sign_factor(factor_rect(x))
         if player_rect.colliderect(sign_rect_single):
@@ -815,10 +863,8 @@ while running == True:
             PRESS_LEFT = False
             PRESS_UP = False
             PRESS_DOWN = False
-    
-    if running == False:
-        break
 
+    #if clue is not found, based on randomly generated string, locate the clue based on the clue list
     if clue_found == False:
 
         if clue_location_horziontal == "left" and clue_location_vertical == "top":
@@ -833,6 +879,7 @@ while running == True:
         elif clue_location_horziontal == "right" and clue_location_vertical == "bottom":
             clue_rect = factor_rect(clues[clue_number-1])
 
+        #if player collides with clue and presses space, give them the clue by setting boolean to True
         keys = py.key.get_pressed()
         if keys[py.K_SPACE]:
             if player_rect.colliderect(clue_rect):
@@ -847,6 +894,7 @@ while running == True:
     bathroom_rect = factor_rect(py.Rect(600, 200, 200, 100))
     keys = py.key.get_pressed()
 
+    #object collidtion and boolean statements
     if flash_light == False:
         if player_rect.colliderect(flash_rect_global):
             if keys[py.K_SPACE]:
@@ -875,7 +923,8 @@ while running == True:
                 PRESS_LEFT = False
                 PRESS_UP = False
                 PRESS_DOWN = False
-        
+    
+    #forces player back without axe, and cuts the crates down with axe
     if player_rect.colliderect(crates_rect_blockage) and crates_boolean == True:
         if axe_boolean == True: 
             textbox("Chop Chop Chop...")
@@ -890,18 +939,20 @@ while running == True:
             PRESS_UP = False
             PRESS_DOWN = False
 
+    #when player hits treasure break and end game
     if player_rect.colliderect(chest_rect):
-        
         textbox("You found the treasure!")
         break
 
     py.display.flip()
     clock.tick(60)
 
-score = 10*number_of_clues_found - (py.time.get_ticks()-init_time)/1000
+#score calacuted via number of clues found minus time spent
+score = 100*number_of_clues_found - (py.time.get_ticks()-init_time)/1000
 score_text = str(int(score))
 score_file.write("Score: " + score_text)
-
+score_file.close()
+#show score plus win image
 while True:
     screen.blit(win_cond,(0,0))
     new_roman = py.font.SysFont("Times New Roman", 50)
